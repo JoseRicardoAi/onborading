@@ -147,6 +147,12 @@ module.exports = [
         ecmaVersion: 2022,
         sourceType: 'module',
       },
+      globals: {
+        Buffer: 'readonly',
+        Request: 'readonly',
+        URL: 'readonly',
+        process: 'readonly',
+      },
     },
     plugins: {
       '@typescript-eslint': tsPlugin,
