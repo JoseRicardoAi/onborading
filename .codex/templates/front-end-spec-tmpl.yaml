@@ -1,0 +1,209 @@
+template:
+  id: frontend-spec-template-v2
+  name: UI/UX Specification
+  version: 2.0
+  output:
+    format: markdown
+    filename: docs/front-end-spec.md
+    title: '{{project_name}} UI/UX Specification'
+
+workflow:
+  mode: interactive
+  elicitation: advanced-elicitation
+
+sections:
+  - id: introduction
+    title: Introduction
+    instruction: |
+      Revisar documentos: Project Brief, PRD e pesquisa com usuários.
+      Entender necessidades dos usuários antes de começar a especificação.
+    content: |
+      Este documento define os objetivos de UX, arquitetura de informação, fluxos de usuário e especificações de design visual para a interface de {{project_name}}.
+    sections:
+      - id: ux-goals-principles
+        title: Overall UX Goals & Principles
+        elicit: true
+        sections:
+          - id: user-personas
+            title: Target User Personas
+            template: '{{persona_descriptions}}'
+            examples:
+              - '**Power User:** Profissionais técnicos que precisam de features avançadas'
+              - '**Usuário Casual:** Usuários ocasionais que priorizam facilidade de uso'
+              - '**Administrador:** Gerentes de sistema que precisam de controle'
+          - id: usability-goals
+            title: Usability Goals
+            template: '{{usability_goals}}'
+            examples:
+              - 'Facilidade de aprendizado: Novos usuários completam tarefas core em 5 minutos'
+              - 'Eficiência: Power users completam tarefas frequentes com mínimo de cliques'
+          - id: design-principles
+            title: Design Principles
+            type: numbered-list
+            examples:
+              - '**Clareza sobre inteligência** - Comunicação clara antes de inovação estética'
+              - '**Progressive disclosure** - Mostrar só o que é necessário quando é necessário'
+              - '**Padrões consistentes** - Usar padrões familiares de UI em toda a aplicação'
+              - '**Feedback imediato** - Toda ação deve ter resposta clara e imediata'
+      - id: changelog
+        title: Change Log
+        type: table
+        columns: [Data, Versão, Descrição, Autor]
+
+  - id: information-architecture
+    title: Information Architecture (IA)
+    instruction: Criar Site Map e definir Navigation Structure com diagramas Mermaid.
+    elicit: true
+    sections:
+      - id: sitemap
+        title: Site Map / Screen Inventory
+        type: mermaid
+        mermaid_type: graph
+        template: '{{sitemap_diagram}}'
+      - id: navigation-structure
+        title: Navigation Structure
+        template: |
+          **Navegação Primária:** {{primary_nav_description}}
+          **Navegação Secundária:** {{secondary_nav_description}}
+          **Estratégia de Breadcrumb:** {{breadcrumb_strategy}}
+
+  - id: user-flows
+    title: User Flows
+    instruction: |
+      Para cada task crítica do usuário no PRD:
+      1. Definir goal do usuário claramente
+      2. Mapear todos os passos incluindo decision points
+      3. Considerar edge cases e error states
+      4. Usar diagramas Mermaid
+    elicit: true
+    repeatable: true
+    sections:
+      - id: flow
+        title: '{{flow_name}}'
+        template: |
+          **User Goal:** {{flow_goal}}
+          **Entry Points:** {{entry_points}}
+          **Critérios de Sucesso:** {{success_criteria}}
+        sections:
+          - id: flow-diagram
+            title: Flow Diagram
+            type: mermaid
+            template: '{{flow_diagram}}'
+          - id: edge-cases
+            title: 'Edge Cases & Error Handling:'
+            type: bullet-list
+            template: '- {{edge_case}}'
+
+  - id: wireframes-mockups
+    title: Wireframes & Mockups
+    elicit: true
+    sections:
+      - id: design-files
+        template: '**Design Files Primários:** {{design_tool_link}}'
+      - id: key-screen-layouts
+        title: Key Screen Layouts
+        repeatable: true
+        sections:
+          - id: screen
+            title: '{{screen_name}}'
+            template: |
+              **Propósito:** {{screen_purpose}}
+              **Elementos Chave:**
+              - {{element_1}}
+              - {{element_2}}
+              **Notas de Interação:** {{interaction_notes}}
+
+  - id: component-library
+    title: Component Library / Design System
+    elicit: true
+    sections:
+      - id: design-system-approach
+        template: '**Abordagem do Design System:** {{design_system_approach}}'
+      - id: core-components
+        title: Core Components
+        repeatable: true
+        sections:
+          - id: component
+            title: '{{component_name}}'
+            template: |
+              **Propósito:** {{component_purpose}}
+              **Variantes:** {{component_variants}}
+              **States:** {{component_states}}
+              **Diretrizes de Uso:** {{usage_guidelines}}
+
+  - id: branding-style
+    title: Branding & Style Guide
+    elicit: true
+    sections:
+      - id: color-palette
+        title: Color Palette
+        type: table
+        columns: ['Tipo de Cor', 'Hex Code', 'Uso']
+        rows:
+          - ['Primary', '{{primary_color}}', '{{primary_usage}}']
+          - ['Secondary', '{{secondary_color}}', '{{secondary_usage}}']
+          - ['Accent', '{{accent_color}}', '{{accent_usage}}']
+          - ['Success', '{{success_color}}', 'Feedback positivo, confirmações']
+          - ['Warning', '{{warning_color}}', 'Cautelas, avisos importantes']
+          - ['Error', '{{error_color}}', 'Erros, ações destrutivas']
+      - id: typography
+        title: Typography
+        sections:
+          - id: font-families
+            title: Font Families
+            template: |
+              - **Primária:** {{primary_font}}
+              - **Secundária:** {{secondary_font}}
+              - **Monospace:** {{mono_font}}
+          - id: type-scale
+            title: Type Scale
+            type: table
+            columns: ['Elemento', 'Tamanho', 'Peso', 'Line Height']
+            rows:
+              - ['H1', '{{h1_size}}', '{{h1_weight}}', '{{h1_line}}']
+              - ['H2', '{{h2_size}}', '{{h2_weight}}', '{{h2_line}}']
+              - ['Body', '{{body_size}}', '{{body_weight}}', '{{body_line}}']
+
+  - id: accessibility
+    title: Accessibility Requirements
+    elicit: true
+    sections:
+      - id: compliance-target
+        title: Compliance Target
+        template: '**Padrão:** {{compliance_standard}}'
+      - id: key-requirements
+        title: Key Requirements
+        template: |
+          **Visual:**
+          - Contraste de cores: {{contrast_requirements}}
+          - Focus indicators: {{focus_requirements}}
+
+          **Interação:**
+          - Navegação por teclado: {{keyboard_requirements}}
+          - Screen reader: {{screen_reader_requirements}}
+
+  - id: responsiveness
+    title: Responsiveness Strategy
+    elicit: true
+    sections:
+      - id: breakpoints
+        title: Breakpoints
+        type: table
+        columns: ['Breakpoint', 'Min Width', 'Max Width', 'Dispositivos-alvo']
+        rows:
+          - ['Mobile', '{{mobile_min}}', '{{mobile_max}}', '{{mobile_devices}}']
+          - ['Tablet', '{{tablet_min}}', '{{tablet_max}}', '{{tablet_devices}}']
+          - ['Desktop', '{{desktop_min}}', '{{desktop_max}}', '{{desktop_devices}}']
+
+  - id: next-steps
+    title: Next Steps
+    sections:
+      - id: design-handoff-checklist
+        title: Design Handoff Checklist
+        type: checklist
+        items:
+          - 'Todos os fluxos de usuário documentados'
+          - 'Inventário de componentes completo'
+          - 'Requisitos de acessibilidade definidos'
+          - 'Estratégia responsiva clara'
+          - 'Brand guidelines incorporadas'

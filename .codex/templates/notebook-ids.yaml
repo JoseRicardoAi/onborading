@@ -1,0 +1,24 @@
+# Modelo: notebook-ids.yaml
+#
+# Copie este arquivo para a pasta docs/architecture/ do seu novo projeto.
+# Preencha os IDs dos Notebooks que você criou no NotebookLM seguindo o
+# guia de setup NotebookLM do projeto.
+#
+# A Squad de Design System global (.codex/squads/design-system/) lê
+# este arquivo para saber qual Notebook consultar durante uam sessão de trabalho.
+#
+# Como ativar a squad para este projeto:
+#   Use o seguinte prompt na sua sessão Codex:
+#
+#   "Leia as diretrizes em PROJECT_ROOT/docs/architecture/notebook-ids.yaml
+#    e fixe PROJECT_ROOT=projetos/[nome-do-seu-projeto]/"
+
+notebooklm:
+  web:
+    notebook_id: 'COLE_AQUI_O_ID_DO_NOTEBOOK_WEB'     # Ex: 'bb3b5364-6223-41b3-b954-29a794036208'
+    notebook_name: '[NOME_DO_PROJETO] Design System Web'
+    description: 'Descreva brevemente o que este notebook contém (stack, guidelines, etc.)'
+  mobile:
+    notebook_id: 'COLE_AQUI_O_ID_DO_NOTEBOOK_MOBILE'   # Ex: 'd3f92c7d-cd10-4a1f-bfc7-7f92c10d43b1'
+    notebook_name: '[NOME_DO_PROJETO] Design System Mobile'
+    description: 'Descreva brevemente o que este notebook contém (stack, guidelines, etc.)'

@@ -1,0 +1,369 @@
+template:
+  id: fullstack-architecture-template-v2
+  name: Fullstack Architecture Document
+  version: 2.0
+  output:
+    format: markdown
+    filename: docs/architecture.md
+    title: '{{project_name}} Fullstack Architecture Document'
+
+workflow:
+  mode: interactive
+  elicitation: advanced-elicitation
+
+sections:
+  - id: introduction
+    title: Introduction
+    instruction: |
+      Revisar documentos disponíveis: docs/prd.md e docs/front-end-spec.md no mínimo.
+      Este template cria uma arquitetura unificada cobrindo backend e frontend.
+    elicit: true
+    content: |
+      Este documento delineia a arquitetura fullstack completa para {{project_name}}, incluindo sistemas de backend, implementação de frontend e sua integração. É a fonte única de verdade para desenvolvimento orientado por IA.
+    sections:
+      - id: starter-template
+        title: Starter Template or Existing Project
+        instruction: |
+          Verificar se o projeto usa starter templates ou codebases existentes:
+          1. Buscar no PRD menções de: T3 Stack, MEAN/MERN, Monorepo (Nx, Turborepo), etc.
+          2. Se encontrado: solicitar acesso (links, repos, arquivos)
+          3. Se greenfield: sugerir starters baseados nas preferências de tech
+          4. Documentar decisão e constraints
+          Se nenhum: declarar "N/A - Greenfield project"
+      - id: changelog
+        title: Change Log
+        type: table
+        columns: [Data, Versão, Descrição, Autor]
+
+  - id: high-level-architecture
+    title: High Level Architecture
+    elicit: true
+    sections:
+      - id: technical-summary
+        title: Technical Summary
+        instruction: |
+          Overview de 4-6 frases cobrindo:
+          - Estilo arquitetural e abordagem de deployment
+          - Framework frontend e tecnologia backend
+          - Pontos de integração chave
+          - Plataforma de infraestrutura
+      - id: platform-infrastructure
+        title: Platform and Infrastructure Choice
+        instruction: |
+          Baseado nos requisitos do PRD:
+          - **Vercel + Supabase**: Desenvolvimento rápido com Next.js
+          - **AWS Full Stack**: Escala enterprise com Lambda, API Gateway, S3
+          - **Azure**: Ecossistemas .NET
+          - **Google Cloud**: Apps com ML/AI
+
+          Apresentar 2-3 opções viáveis, fazer recomendação e confirmar com usuário.
+        template: |
+          **Platform:** {{selected_platform}}
+          **Key Services:** {{core_services_list}}
+          **Deployment Host and Regions:** {{regions}}
+      - id: repository-structure
+        title: Repository Structure
+        instruction: |
+          Monorepo é geralmente preferido para apps fullstack modernas.
+          Considerar tooling: Nx, Turborepo, npm workspaces.
+        template: |
+          **Structure:** {{repo_structure_choice}}
+          **Monorepo Tool:** {{monorepo_tool_if_applicable}}
+          **Package Organization:** {{package_strategy}}
+      - id: architecture-diagram
+        title: High Level Architecture Diagram
+        type: mermaid
+        mermaid_type: graph
+        instruction: |
+          Criar diagrama Mermaid mostrando: entry points do usuário, frontend, API layer,
+          backend services, databases, integrações externas, CDN e caching.
+      - id: architectural-patterns
+        title: Architectural Patterns
+        repeatable: true
+        template: '- **{{pattern_name}}:** {{pattern_description}} - _Rationale:_ {{rationale}}'
+        examples:
+          - '**Jamstack Architecture:** SSG com APIs serverless - _Rationale:_ Performance ótima'
+          - '**Component-Based UI:** Componentes React reutilizáveis com TypeScript'
+          - '**Repository Pattern:** Abstrai acesso a dados - _Rationale:_ Testabilidade'
+
+  - id: tech-stack
+    title: Tech Stack
+    instruction: |
+      Seleção DEFINITIVA de tecnologias para todo o projeto. Fonte única de verdade.
+    elicit: true
+    sections:
+      - id: tech-stack-table
+        title: Technology Stack Table
+        type: table
+        columns: [Categoria, Tecnologia, Versão, Propósito, Rationale]
+        rows:
+          - ['Frontend Language', '{{fe_language}}', '{{version}}', '{{purpose}}', '{{why_chosen}}']
+          - [
+              'Frontend Framework',
+              '{{fe_framework}}',
+              '{{version}}',
+              '{{purpose}}',
+              '{{why_chosen}}',
+            ]
+          - [
+              'UI Component Library',
+              '{{ui_library}}',
+              '{{version}}',
+              '{{purpose}}',
+              '{{why_chosen}}',
+            ]
+          - ['State Management', '{{state_mgmt}}', '{{version}}', '{{purpose}}', '{{why_chosen}}']
+          - ['Backend Language', '{{be_language}}', '{{version}}', '{{purpose}}', '{{why_chosen}}']
+          - [
+              'Backend Framework',
+              '{{be_framework}}',
+              '{{version}}',
+              '{{purpose}}',
+              '{{why_chosen}}',
+            ]
+          - ['API Style', '{{api_style}}', '{{version}}', '{{purpose}}', '{{why_chosen}}']
+          - ['Database', '{{database}}', '{{version}}', '{{purpose}}', '{{why_chosen}}']
+          - ['Cache', '{{cache}}', '{{version}}', '{{purpose}}', '{{why_chosen}}']
+          - ['Authentication', '{{auth}}', '{{version}}', '{{purpose}}', '{{why_chosen}}']
+          - ['Frontend Testing', '{{fe_test}}', '{{version}}', '{{purpose}}', '{{why_chosen}}']
+          - ['Backend Testing', '{{be_test}}', '{{version}}', '{{purpose}}', '{{why_chosen}}']
+          - ['E2E Testing', '{{e2e_test}}', '{{version}}', '{{purpose}}', '{{why_chosen}}']
+          - ['Build Tool', '{{build_tool}}', '{{version}}', '{{purpose}}', '{{why_chosen}}']
+          - ['CI/CD', '{{cicd}}', '{{version}}', '{{purpose}}', '{{why_chosen}}']
+
+  - id: data-models
+    title: Data Models
+    instruction: |
+      Definir modelos de dados core compartilhados entre frontend e backend:
+      1. Identificar entidades de negócio chave do PRD
+      2. Para cada modelo: propósito, atributos, tipos, relacionamentos
+      3. Criar TypeScript interfaces compartilhadas
+    elicit: true
+    repeatable: true
+    sections:
+      - id: model
+        title: '{{model_name}}'
+        template: |
+          **Propósito:** {{model_purpose}}
+
+          **Atributos Chave:**
+          - {{attribute_1}}: {{type_1}} - {{description_1}}
+        sections:
+          - id: typescript-interface
+            title: TypeScript Interface
+            type: code
+            language: typescript
+            template: '{{model_interface}}'
+          - id: relationships
+            title: Relationships
+            type: bullet-list
+            template: '- {{relationship}}'
+
+  - id: api-spec
+    title: API Specification
+    instruction: |
+      Baseado no API style do Tech Stack:
+      - REST: OpenAPI 3.0 spec
+      - GraphQL: schema GraphQL
+      - tRPC: definições de router
+      Incluir todos os endpoints de épicos/stories, autenticação, exemplos.
+    elicit: true
+
+  - id: unified-project-structure
+    title: Unified Project Structure
+    instruction: Criar estrutura de monorepo para frontend e backend.
+    elicit: true
+    type: code
+    language: plaintext
+    examples:
+      - |
+        {{project-name}}/
+        ├── .github/workflows/     # CI/CD
+        ├── apps/
+        │   ├── web/               # Frontend
+        │   │   ├── src/
+        │   │   │   ├── components/
+        │   │   │   ├── pages/
+        │   │   │   ├── hooks/
+        │   │   │   ├── services/
+        │   │   │   ├── stores/
+        │   │   │   └── utils/
+        │   │   └── tests/
+        │   └── api/               # Backend
+        │       ├── src/
+        │       │   ├── routes/
+        │       │   ├── services/
+        │       │   ├── models/
+        │       │   └── middleware/
+        │       └── tests/
+        ├── packages/
+        │   ├── shared/            # Tipos/utils compartilhados
+        │   └── ui/                # Componentes compartilhados
+        ├── infrastructure/        # IaC
+        ├── docs/
+        └── README.md
+
+  - id: frontend-architecture
+    title: Frontend Architecture
+    elicit: true
+    sections:
+      - id: component-architecture
+        title: Component Architecture
+        sections:
+          - id: component-template
+            title: Component Template
+            type: code
+            language: typescript
+      - id: state-management
+        title: State Management Architecture
+        sections:
+          - id: state-patterns
+            title: State Management Patterns
+            type: bullet-list
+      - id: routing-architecture
+        title: Routing Architecture
+
+  - id: backend-architecture
+    title: Backend Architecture
+    elicit: true
+    sections:
+      - id: service-architecture
+        title: Service Architecture
+      - id: database-architecture
+        title: Database Architecture
+        sections:
+          - id: schema-design
+            title: Schema Design
+            type: code
+            language: sql
+          - id: data-access-layer
+            title: Data Access Layer
+            type: code
+            language: typescript
+      - id: auth-architecture
+        title: Authentication and Authorization
+        sections:
+          - id: auth-flow
+            title: Auth Flow
+            type: mermaid
+            mermaid_type: sequence
+
+  - id: development-workflow
+    title: Development Workflow
+    elicit: true
+    sections:
+      - id: local-setup
+        title: Local Development Setup
+        sections:
+          - id: dev-commands
+            title: Development Commands
+            type: code
+            language: bash
+            template: |
+              # Start all services
+              {{start_all_command}}
+              # Frontend only
+              {{start_frontend_command}}
+              # Backend only
+              {{start_backend_command}}
+              # Tests
+              {{test_commands}}
+
+  - id: deployment-architecture
+    title: Deployment Architecture
+    elicit: true
+    sections:
+      - id: deployment-strategy
+        title: Deployment Strategy
+        template: |
+          **Frontend:**
+          - Platform: {{frontend_deploy_platform}}
+          - Build: {{frontend_build_command}}
+
+          **Backend:**
+          - Platform: {{backend_deploy_platform}}
+          - Deploy Method: {{deployment_method}}
+      - id: environments
+        title: Environments
+        type: table
+        columns: [Ambiente, Frontend URL, Backend URL, Propósito]
+        rows:
+          - ['Development', '{{dev_fe_url}}', '{{dev_be_url}}', 'Desenvolvimento local']
+          - ['Staging', '{{staging_fe_url}}', '{{staging_be_url}}', 'Pré-produção']
+          - ['Production', '{{prod_fe_url}}', '{{prod_be_url}}', 'Ambiente live']
+
+  - id: security-performance
+    title: Security and Performance
+    elicit: true
+    sections:
+      - id: security-requirements
+        title: Security Requirements
+        template: |
+          **Frontend Security:** CSP: {{csp_policy}} | XSS: {{xss_strategy}}
+          **Backend Security:** Rate Limiting: {{rate_limit_config}} | CORS: {{cors_config}}
+          **Auth Security:** Token Storage: {{token_strategy}}
+      - id: performance-optimization
+        title: Performance Optimization
+        template: |
+          **Frontend:** Bundle Size: {{bundle_size}} | Cache: {{fe_cache_strategy}}
+          **Backend:** Response Time: {{response_target}} | Cache: {{be_cache_strategy}}
+
+  - id: testing-strategy
+    title: Testing Strategy
+    elicit: true
+    sections:
+      - id: test-organization
+        title: Test Organization
+        sections:
+          - id: frontend-tests
+            title: Frontend Tests
+            type: code
+            language: text
+          - id: backend-tests
+            title: Backend Tests
+            type: code
+            language: text
+
+  - id: coding-standards
+    title: Coding Standards
+    elicit: true
+    sections:
+      - id: critical-rules
+        title: Critical Fullstack Rules
+        repeatable: true
+        template: '- **{{rule_name}}:** {{rule_description}}'
+        examples:
+          - '**Type Sharing:** Sempre definir types em packages/shared'
+          - '**API Calls:** Nunca fazer HTTP calls diretas — usar service layer'
+          - '**Environment Variables:** Acessar apenas via config objects'
+
+  - id: error-handling
+    title: Error Handling Strategy
+    elicit: true
+    sections:
+      - id: error-format
+        title: Error Response Format
+        type: code
+        language: typescript
+        template: |
+          interface ApiError {
+            error: {
+              code: string;
+              message: string;
+              details?: Record<string, any>;
+              timestamp: string;
+              requestId: string;
+            };
+          }
+
+  - id: monitoring
+    title: Monitoring and Observability
+    elicit: true
+    sections:
+      - id: monitoring-stack
+        title: Monitoring Stack
+        template: |
+          - **Frontend Monitoring:** {{frontend_monitoring}}
+          - **Backend Monitoring:** {{backend_monitoring}}
+          - **Error Tracking:** {{error_tracking}}
+          - **Performance:** {{perf_monitoring}}

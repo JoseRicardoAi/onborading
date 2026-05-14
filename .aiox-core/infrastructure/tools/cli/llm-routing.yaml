@@ -1,0 +1,126 @@
+# LLM Routing Tool Definition
+# Location: .aiox-core/infrastructure/tools/cli/llm-routing.yaml
+# Version: 1.0.0
+
+tool:
+  id: llm-routing
+  name: LLM Routing
+  version: 1.0.0
+  category: cli
+  description: |
+    Cost-effective LLM routing for Antigravity Code.
+    Provides two commands for different use cases:
+    - antigravity-max: Uses Antigravity Max subscription via OAuth (~$15/M tokens)
+    - antigravity-free: Uses DeepSeek API (~$0.14/M tokens)
+
+capabilities:
+  - Install antigravity-max and antigravity-free commands
+  - Cross-platform support (Windows CMD, Unix bash)
+  - Automatic .env file detection for API keys
+  - Cost optimization for development workflows
+
+installation:
+  method: script
+  script: .aiox-core/infrastructure/scripts/llm-routing/install-llm-routing.js
+  templates_dir: .aiox-core/infrastructure/scripts/llm-routing/templates/
+
+  # Files installed
+  windows:
+    - name: antigravity-free.cmd
+      target: "%APPDATA%/npm/antigravity-free.cmd"
+    - name: antigravity-max.cmd
+      target: "%APPDATA%/npm/antigravity-max.cmd"
+
+  unix:
+    - name: antigravity-free.sh
+      target: "/usr/local/bin/antigravity-free"
+      permissions: "755"
+    - name: antigravity-max.sh
+      target: "/usr/local/bin/antigravity-max"
+      permissions: "755"
+
+usage:
+  antigravity-max:
+    description: "Premium Antigravity experience using Max subscription"
+    command: "antigravity-max"
+    authentication: OAuth (antigravity.ai login)
+    cost: "Included in subscription (~$15/M tokens if API)"
+    features:
+      - Full Antigravity capabilities
+      - No API key required
+      - Uses existing Antigravity login
+
+  antigravity-free:
+    description: "Cost-effective development using DeepSeek"
+    command: "antigravity-free"
+    authentication: API Key (DEEPSEEK_API_KEY)
+    cost: "~$0.14/M tokens"
+    features:
+      - Tool calling support
+      - Compatible with Antigravity Code workflows
+      - Project .env file support
+    setup:
+      - "Get API key at: https://platform.deepseek.com/api_keys"
+      - "Add to .env: DEEPSEEK_API_KEY=sk-your-key"
+      - "Or export: export DEEPSEEK_API_KEY=sk-your-key"
+
+configuration:
+  env_file: ".env"
+  env_variables:
+    DEEPSEEK_API_KEY:
+      description: "DeepSeek API key for antigravity-free command"
+      required: true
+      format: "sk-*"
+      obtain_at: "https://platform.deepseek.com/api_keys"
+
+cost_comparison:
+  antigravity_max:
+    input: "$15.00/M tokens"
+    output: "$75.00/M tokens"
+    note: "Included in Max subscription"
+  deepseek:
+    input: "$0.07/M tokens"
+    output: "$0.14/M tokens"
+    note: "Native Anthropic-compatible endpoint with tool support"
+
+integration:
+  wizard_step: true
+  wizard_order: 5
+  required: false
+  recommended: true
+  message: |
+    Would you like to install LLM routing commands?
+    - antigravity-max: Uses your Antigravity Max subscription
+    - antigravity-free: Uses DeepSeek (~99% cost reduction)
+
+health_check:
+  windows:
+    - "where antigravity-free.cmd"
+    - "where antigravity-max.cmd"
+  unix:
+    - "which antigravity-free"
+    - "which antigravity-max"
+
+troubleshooting:
+  command_not_found:
+    cause: "Commands not in PATH"
+    solution: |
+      Windows: Ensure %APPDATA%/npm is in PATH
+      Unix: Ensure /usr/local/bin or ~/bin is in PATH
+
+  api_key_error:
+    cause: "DEEPSEEK_API_KEY not set"
+    solution: |
+      1. Create .env file in project root
+      2. Add: DEEPSEEK_API_KEY=sk-your-key
+      3. Get key at: https://platform.deepseek.com/api_keys
+
+related_docs:
+  - docs/guides/llm-routing.md
+  - .aiox-core/development/tasks/setup-llm-routing.md
+
+metadata:
+  created: "2025-12-14"
+  updated: "2025-12-14"
+  author: "AIOX Framework"
+  story: "6.7"

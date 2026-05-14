@@ -1,0 +1,53 @@
+name: squad-creator
+version: 1.0.0
+description: Squad mestre orquestrador para criação e gestão de squads no ambiente AIOX, com suporte a Antigravity e Codex. Responsável por pesquisar mentes, extrair DNA, criar agentes e registrar squads.
+author: AIOX
+license: MIT
+slashPrefix: squad-creator
+
+aiox:
+  minVersion: '2.1.0'
+  type: squad
+
+components:
+  agents:
+    - oalanicolas.md
+    - pedro-valerio.md
+    - research-specialists.md
+  tasks:
+    - create-squad.md
+    - create-agent.md
+    - validate-squad.md
+    - mind-validation.md
+    - sync-squads.md
+  workflows:
+    - clone-mind.md
+    - create-squad-workflow.md
+    - mind-research-loop.md
+  checklists: []
+  templates: []
+  tools: []
+  scripts: []
+
+config:
+  extends: none
+  runtimeTargets:
+    antigravity:
+      operationalRoot: .antigravity
+      skillsDir: .antigravity/skills
+      templatesDir: .antigravity/templates
+    codex:
+      operationalRoot: .codex
+      skillsDir: .codex/skills
+      templatesDir: .codex/templates
+
+dependencies:
+  node: []
+  python: []
+  squads: []
+
+tags:
+  - core
+  - orchestrator
+  - management
+  - squad-creation

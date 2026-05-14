@@ -1,0 +1,180 @@
+template:
+  id: brownfield-prd-template-v2
+  name: Brownfield Enhancement PRD
+  version: 2.0
+  output:
+    format: markdown
+    filename: docs/prd.md
+    title: '{{project_name}} Brownfield Enhancement PRD'
+
+workflow:
+  mode: interactive
+  elicitation: advanced-elicitation
+
+sections:
+  - id: intro-analysis
+    title: Intro Project Analysis and Context
+    instruction: |
+      IMPORTANTE — AVALIAÇÃO DE ESCOPO OBRIGATÓRIA:
+
+      Este PRD é para enhancements SIGNIFICATIVOS em projetos existentes que requerem planejamento abrangente.
+
+      1. **Avaliar complexidade**: Se é uma adição simples que cabe em 1-2 sessões, recomendar: "Para mudanças simples, use brownfield-create-epic ou brownfield-create-story como PO."
+
+      2. **Contexto do projeto**: Verificar se existe output do document-project. Se não há documentação suficiente, recomendar rodar document-project primeiro.
+
+      3. **Deep Assessment**: Analisar estrutura existente ANTES de fazer sugestões. Confirmar premissas com o usuário.
+    sections:
+      - id: existing-project-overview
+        title: Existing Project Overview
+        sections:
+          - id: analysis-source
+            title: Analysis Source
+            instruction: |
+              Indicar: Output do document-project disponível em / Análise fresh via IDE / Informação fornecida pelo usuário
+          - id: current-state
+            title: Current Project State
+            instruction: Resumo do que o projeto faz atualmente, extraído do document-project se disponível
+      - id: documentation-analysis
+        title: Available Documentation Analysis
+        sections:
+          - id: available-docs
+            title: Available Documentation
+            type: checklist
+            items:
+              - Tech Stack Documentation
+              - Source Tree/Architecture
+              - Coding Standards
+              - API Documentation
+              - External API Documentation
+              - UX/UI Guidelines
+              - Technical Debt Documentation
+      - id: enhancement-scope
+        title: Enhancement Scope Definition
+        sections:
+          - id: enhancement-type
+            title: Enhancement Type
+            type: checklist
+            items:
+              - Nova Feature
+              - Modificação Major de Feature Existente
+              - Integração com Novos Sistemas
+              - Melhorias de Performance/Escalabilidade
+              - Refactoring de UI/UX
+              - Upgrade de Tech Stack
+              - Bug Fix e Estabilidade
+          - id: enhancement-description
+            title: Enhancement Description
+            instruction: 2-3 frases descrevendo o que o usuário quer adicionar ou mudar
+          - id: impact-assessment
+            title: Impact Assessment
+            type: checklist
+            items:
+              - Impacto Mínimo (adições isoladas)
+              - Impacto Moderado (algumas mudanças em código existente)
+              - Impacto Significativo (mudanças substanciais em código existente)
+              - Impacto Major (mudanças arquiteturais necessárias)
+      - id: goals-context
+        title: Goals and Background Context
+        sections:
+          - id: goals
+            title: Goals
+            type: bullet-list
+            instruction: Lista de outcomes desejados
+          - id: background
+            title: Background Context
+            instruction: 1-2 parágrafos explicando por que este enhancement é necessário
+      - id: changelog
+        title: Change Log
+        type: table
+        columns: [Mudança, Data, Versão, Descrição, Autor]
+
+  - id: requirements
+    title: Requirements
+    instruction: Rascunhar requisitos baseados na análise validada do projeto existente.
+    elicit: true
+    sections:
+      - id: functional
+        title: Functional
+        type: numbered-list
+        prefix: FR
+        examples:
+          - 'FR1: A Todo List existente vai integrar com o novo serviço de detecção de duplicatas sem quebrar funcionalidade atual.'
+      - id: non-functional
+        title: Non Functional
+        type: numbered-list
+        prefix: NFR
+        examples:
+          - 'NFR1: Enhancement deve manter características de performance existentes.'
+      - id: compatibility
+        title: Compatibility Requirements
+        type: numbered-list
+        prefix: CR
+        items:
+          - template: 'CR1: {{existing_api_compatibility}}'
+          - template: 'CR2: {{database_schema_compatibility}}'
+          - template: 'CR3: {{ui_ux_consistency}}'
+          - template: 'CR4: {{integration_compatibility}}'
+
+  - id: technical-constraints
+    title: Technical Constraints and Integration Requirements
+    sections:
+      - id: existing-tech-stack
+        title: Existing Technology Stack
+        template: |
+          **Linguagens**: {{languages}}
+          **Frameworks**: {{frameworks}}
+          **Database**: {{database}}
+          **Infrastructure**: {{infrastructure}}
+          **Dependências Externas**: {{external_dependencies}}
+      - id: integration-approach
+        title: Integration Approach
+        template: |
+          **Estratégia de Integração DB**: {{database_integration}}
+          **Estratégia de Integração API**: {{api_integration}}
+          **Estratégia de Integração FE**: {{frontend_integration}}
+      - id: risk-assessment
+        title: Risk Assessment and Mitigation
+        template: |
+          **Riscos Técnicos**: {{technical_risks}}
+          **Riscos de Integração**: {{integration_risks}}
+          **Estratégias de Mitigação**: {{mitigation_strategies}}
+
+  - id: epic-structure
+    title: Epic and Story Structure
+    instruction: |
+      Para projetos brownfield, favorecer um único épico abrangente a menos que o usuário peça múltiplos enhancements não relacionados.
+    elicit: true
+
+  - id: epic-details
+    title: 'Epic 1: {{enhancement_title}}'
+    instruction: |
+      SEQUENCIAMENTO CRÍTICO PARA BROWNFIELD:
+      - Stories devem garantir que funcionalidade existente permanece intacta
+      - Cada story deve incluir verificação de que features existentes ainda funcionam
+      - Sequenciar para minimizar risco ao sistema existente
+      - Incluir considerações de rollback para cada story
+    template: |
+      **Epic Goal**: {{epic_goal}}
+      **Integration Requirements**: {{integration_requirements}}
+    sections:
+      - id: story
+        title: 'Story 1.{{story_number}} {{story_title}}'
+        repeatable: true
+        template: |
+          Como {{user_type}},
+          quero {{action}},
+          para {{benefit}}.
+        sections:
+          - id: acceptance-criteria
+            title: Acceptance Criteria
+            type: numbered-list
+            instruction: Definir critérios que incluem tanto nova funcionalidade quanto integridade do sistema existente
+          - id: integration-verification
+            title: Integration Verification
+            type: numbered-list
+            prefix: IV
+            items:
+              - template: 'IV1: {{existing_functionality_verification}}'
+              - template: 'IV2: {{integration_point_verification}}'
+              - template: 'IV3: {{performance_impact_verification}}'

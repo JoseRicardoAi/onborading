@@ -1,0 +1,11 @@
+squads:
+  - id: squad-creator
+    name: Squad Creator
+    domain: Meta-Orchestration
+    purpose: Gerenciar a criação e sincronização de outros squads no ambiente AIOX com suporte a Antigravity e Codex.
+    keywords: [squads, agents, minds, cloning, ai-teams]
+  - id: design-system
+    name: Design System Squad
+    domain: Interface-Architecture
+    purpose: Orquestrar e manter a consistência do design system web e mobile para qualquer projeto.
+    keywords: [ui, ux, frontend, mobile, flutter, design-system, stitch, web, components]

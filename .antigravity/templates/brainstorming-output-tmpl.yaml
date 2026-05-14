@@ -1,0 +1,156 @@
+template:
+  id: brainstorming-output-template-v2
+  name: Brainstorming Session Results
+  version: 2.0
+  output:
+    format: markdown
+    filename: docs/brainstorming-session-results.md
+    title: 'Resultados da Sessão de Brainstorming'
+
+workflow:
+  mode: non-interactive
+
+sections:
+  - id: header
+    content: |
+      **Data da Sessão:** {{date}}
+      **Facilitador:** {{agent_role}} {{agent_name}}
+      **Participante:** {{user_name}}
+
+  - id: executive-summary
+    title: Executive Summary
+    sections:
+      - id: summary-details
+        template: |
+          **Tópico:** {{session_topic}}
+
+          **Objetivos da Sessão:** {{stated_goals}}
+
+          **Técnicas Usadas:** {{techniques_list}}
+
+          **Total de Ideias Geradas:** {{total_ideas}}
+      - id: key-themes
+        title: 'Temas-Chave Identificados:'
+        type: bullet-list
+        template: '- {{theme}}'
+
+  - id: technique-sessions
+    title: Sessões por Técnica
+    repeatable: true
+    sections:
+      - id: technique
+        title: '{{technique_name}} - {{duration}}'
+        sections:
+          - id: description
+            template: '**Descrição:** {{technique_description}}'
+          - id: ideas-generated
+            title: 'Ideias Geradas:'
+            type: numbered-list
+            template: '{{idea}}'
+          - id: insights
+            title: 'Insights Descobertos:'
+            type: bullet-list
+            template: '- {{insight}}'
+          - id: connections
+            title: 'Conexões Notáveis:'
+            type: bullet-list
+            template: '- {{connection}}'
+
+  - id: idea-categorization
+    title: Categorização de Ideias
+    sections:
+      - id: immediate-opportunities
+        title: Oportunidades Imediatas
+        content: '*Ideias prontas para implementar agora*'
+        repeatable: true
+        type: numbered-list
+        template: |
+          **{{idea_name}}**
+          - Descrição: {{description}}
+          - Por que imediato: {{rationale}}
+          - Recursos necessários: {{requirements}}
+      - id: future-innovations
+        title: Inovações Futuras
+        content: '*Ideias que requerem desenvolvimento/pesquisa*'
+        repeatable: true
+        type: numbered-list
+        template: |
+          **{{idea_name}}**
+          - Descrição: {{description}}
+          - Desenvolvimento necessário: {{development_needed}}
+          - Estimativa de prazo: {{timeline}}
+      - id: moonshots
+        title: Moonshots
+        content: '*Conceitos ambiciosos e transformadores*'
+        repeatable: true
+        type: numbered-list
+        template: |
+          **{{idea_name}}**
+          - Descrição: {{description}}
+          - Potencial transformador: {{potential}}
+          - Desafios a superar: {{challenges}}
+      - id: insights-learnings
+        title: Insights & Aprendizados
+        content: '*Realizações chave da sessão*'
+        type: bullet-list
+        template: '- {{insight}}: {{description_and_implications}}'
+
+  - id: action-planning
+    title: Planejamento de Ações
+    sections:
+      - id: top-priorities
+        title: Top 3 Ideias Prioritárias
+        sections:
+          - id: priority-1
+            title: '#1 Prioridade: {{idea_name}}'
+            template: |
+              - Rationale: {{rationale}}
+              - Próximos passos: {{next_steps}}
+              - Recursos necessários: {{resources}}
+              - Prazo: {{timeline}}
+          - id: priority-2
+            title: '#2 Prioridade: {{idea_name}}'
+            template: |
+              - Rationale: {{rationale}}
+              - Próximos passos: {{next_steps}}
+              - Recursos necessários: {{resources}}
+              - Prazo: {{timeline}}
+          - id: priority-3
+            title: '#3 Prioridade: {{idea_name}}'
+            template: |
+              - Rationale: {{rationale}}
+              - Próximos passos: {{next_steps}}
+              - Recursos necessários: {{resources}}
+              - Prazo: {{timeline}}
+
+  - id: reflection-followup
+    title: Reflexão & Follow-up
+    sections:
+      - id: what-worked
+        title: O que Funcionou Bem
+        type: bullet-list
+        template: '- {{aspect}}'
+      - id: areas-exploration
+        title: Áreas para Exploração Adicional
+        type: bullet-list
+        template: '- {{area}}: {{reason}}'
+      - id: recommended-techniques
+        title: Técnicas de Follow-up Recomendadas
+        type: bullet-list
+        template: '- {{technique}}: {{reason}}'
+      - id: questions-emerged
+        title: Questões que Emergiram
+        type: bullet-list
+        template: '- {{question}}'
+      - id: next-session
+        title: Planejamento da Próxima Sessão
+        template: |
+          - **Tópicos sugeridos:** {{followup_topics}}
+          - **Prazo recomendado:** {{timeframe}}
+          - **Preparação necessária:** {{preparation}}
+
+  - id: footer
+    content: |
+      ---
+
+      *Sessão facilitada usando o framework de brainstorming AIOX-Method*

@@ -1,0 +1,192 @@
+template:
+  id: competitor-analysis-template-v2
+  name: Competitive Analysis Report
+  version: 2.0
+  output:
+    format: markdown
+    filename: docs/competitor-analysis.md
+    title: 'Competitive Analysis Report: {{project_product_name}}'
+
+workflow:
+  mode: interactive
+  elicitation: advanced-elicitation
+  custom_elicitation:
+    title: 'Ações de Elicitação — Análise Competitiva'
+    options:
+      - 'Deep dive na estratégia de um concorrente específico'
+      - 'Analisar dinâmicas competitivas em segmento específico'
+      - 'War game de respostas competitivas aos seus movimentos'
+      - 'Explorar cenários de parceria vs. competição'
+      - 'Stress test de claims de diferenciação'
+      - 'Analisar potencial disruptivo (seu ou deles)'
+      - 'Comparar com concorrentes em mercados adjacentes'
+      - 'Gerar insights de análise win/loss'
+      - 'Prosseguir para próxima seção'
+
+sections:
+  - id: executive-summary
+    title: Executive Summary
+    instruction: Fornecer insights competitivos de alto nível, principais ameaças e oportunidades, e ações estratégicas recomendadas. Escrever LAST após completar toda a análise.
+
+  - id: analysis-scope
+    title: Analysis Scope & Methodology
+    sections:
+      - id: analysis-purpose
+        title: Analysis Purpose
+        instruction: |
+          Definir o propósito primário:
+          - Avaliação de entrada em novo mercado
+          - Estratégia de posicionamento de produto
+          - Análise de gap de features
+          - Desenvolvimento de estratégia de preços
+          - Targets de parceria/aquisição
+          - Avaliação de ameaça competitiva
+      - id: competitor-categories
+        title: Competitor Categories Analyzed
+        instruction: |
+          Listar categorias incluídas:
+          - Diretos: Mesmo produto/serviço, mesmo mercado
+          - Indiretos: Produto diferente, mesma necessidade
+          - Potenciais: Poderiam entrar facilmente
+          - Substitutos: Soluções alternativas
+          - Aspiracionais: Best-in-class
+      - id: research-methodology
+        title: Research Methodology
+        instruction: |
+          Descrever abordagem:
+          - Fontes usadas, período de análise, limitações
+
+  - id: competitive-landscape
+    title: Competitive Landscape Overview
+    sections:
+      - id: market-structure
+        title: Market Structure
+        instruction: |
+          Descrever o ambiente competitivo:
+          - Número de concorrentes ativos, concentração, dinâmicas, entradas/saídas recentes
+      - id: prioritization-matrix
+        title: Competitor Prioritization Matrix
+        instruction: |
+          Matriz 2x2:
+          - Priority 1 (Core): Alta Market Share + Alta Ameaça
+          - Priority 2 (Emergentes): Baixa Share + Alta Ameaça
+          - Priority 3 (Estabelecidos): Alta Share + Baixa Ameaça
+          - Priority 4 (Monitor): Baixa Share + Baixa Ameaça
+
+  - id: competitor-profiles
+    title: Individual Competitor Profiles
+    repeatable: true
+    sections:
+      - id: competitor
+        title: '{{competitor_name}} - Priority {{priority_level}}'
+        sections:
+          - id: company-overview
+            title: Company Overview
+            template: |
+              - **Fundação:** {{year_founders}}
+              - **HQ:** {{location}}
+              - **Tamanho:** {{employees_revenue}}
+              - **Funding:** {{total_raised_investors}}
+              - **Liderança:** {{key_executives}}
+          - id: business-model
+            title: Business Model & Strategy
+            template: |
+              - **Modelo de Receita:** {{revenue_model}}
+              - **Mercado-alvo:** {{customer_segments}}
+              - **Value Proposition:** {{value_promise}}
+              - **Go-to-Market:** {{gtm_approach}}
+              - **Foco Estratégico:** {{current_priorities}}
+          - id: product-analysis
+            title: Product/Service Analysis
+            template: |
+              - **Ofertas Core:** {{main_products}}
+              - **Features Chave:** {{standout_capabilities}}
+              - **User Experience:** {{ux_assessment}}
+              - **Tech Stack:** {{tech_stack}}
+              - **Pricing:** {{pricing_model}}
+          - id: strengths-weaknesses
+            title: Strengths & Weaknesses
+            sections:
+              - id: strengths
+                title: Pontos Fortes
+                type: bullet-list
+                template: '- {{strength}}'
+              - id: weaknesses
+                title: Pontos Fracos
+                type: bullet-list
+                template: '- {{weakness}}'
+          - id: market-position
+            title: Market Position & Performance
+            template: |
+              - **Market Share:** {{market_share_estimate}}
+              - **Customer Base:** {{customer_size_notables}}
+              - **Crescimento:** {{growth_trend}}
+              - **Desenvolvimentos Recentes:** {{key_news}}
+
+  - id: comparative-analysis
+    title: Comparative Analysis
+    sections:
+      - id: feature-comparison
+        title: Feature Comparison Matrix
+        instruction: Criar tabela de comparação de features chave entre concorrentes
+        type: table
+        columns:
+          [
+            'Feature Category',
+            '{{sua_empresa}}',
+            '{{concorrente_1}}',
+            '{{concorrente_2}}',
+            '{{concorrente_3}}',
+          ]
+      - id: swot-comparison
+        title: SWOT Comparison
+        sections:
+          - id: your-solution
+            title: Sua Solução
+            template: |
+              - **Pontos Fortes:** {{strengths}}
+              - **Pontos Fracos:** {{weaknesses}}
+              - **Oportunidades:** {{opportunities}}
+              - **Ameaças:** {{threats}}
+          - id: vs-competitor
+            title: 'vs. {{main_competitor}}'
+            template: |
+              - **Vantagens Competitivas:** {{your_advantages}}
+              - **Desvantagens:** {{their_advantages}}
+              - **Oportunidades de Diferenciação:** {{differentiation}}
+
+  - id: strategic-recommendations
+    title: Strategic Recommendations
+    sections:
+      - id: differentiation-strategy
+        title: Differentiation Strategy
+        instruction: |
+          Como posicionar vs. concorrentes:
+          - Value propositions únicas a enfatizar
+          - Features a priorizar, segmentos, mensagem
+      - id: competitive-response
+        title: Competitive Response Planning
+        sections:
+          - id: offensive-strategies
+            title: Offensive Strategies
+            instruction: Como ganhar market share atacando franquezas dos concorrentes
+          - id: defensive-strategies
+            title: Defensive Strategies
+            instruction: Como proteger posição atual e construir switching costs
+
+  - id: monitoring-plan
+    title: Monitoring & Intelligence Plan
+    sections:
+      - id: monitoring-metrics
+        title: Monitoring Metrics
+        instruction: |
+          O que trackear: atualizações de produto, mudanças de preço, funding/M&A, mensagem de mercado
+      - id: intelligence-sources
+        title: Intelligence Sources
+        instruction: Sites/blogs, reviews de clientes, relatórios de indústria, redes sociais
+      - id: update-cadence
+        title: Update Cadence
+        instruction: |
+          - Semanal: {{weekly_items}}
+          - Mensal: {{monthly_items}}
+          - Trimestral: {{quarterly_analysis}}

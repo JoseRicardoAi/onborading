@@ -1,0 +1,175 @@
+template:
+  id: frontend-architecture-template-v2
+  name: Frontend Architecture Document
+  version: 2.0
+  output:
+    format: markdown
+    filename: docs/ui-architecture.md
+    title: '{{project_name}} Frontend Architecture Document'
+
+workflow:
+  mode: interactive
+  elicitation: advanced-elicitation
+
+sections:
+  - id: template-framework-selection
+    title: Template and Framework Selection
+    instruction: |
+      Revisar PRD, UI/UX Spec e Architecture Document principal.
+
+      Verificar se o projeto usa starter template de frontend:
+      1. Buscar menções no PRD/architecture de: Create React App, Next.js, Vite, Vue CLI, etc.
+      2. Se starter encontrado: solicitar ao usuário acesso via docs ou repositório
+      3. Analisar: dependências, estrutura de pastas, componentes built-in, estilo (CSS modules, Tailwind, etc.)
+      4. Se nenhum starter: sugerir com base no framework escolhido
+    sections:
+      - id: changelog
+        title: Change Log
+        type: table
+        columns: [Data, Versão, Descrição, Autor]
+
+  - id: frontend-tech-stack
+    title: Frontend Tech Stack
+    instruction: Extrair do Technology Stack Table da arquitetura principal. MANTER SINCRONIZADO.
+    elicit: true
+    sections:
+      - id: tech-stack-table
+        title: Technology Stack Table
+        type: table
+        columns: [Categoria, Tecnologia, Versão, Propósito, Rationale]
+        rows:
+          - ['Framework', '{{framework}}', '{{version}}', '{{purpose}}', '{{why_chosen}}']
+          - ['UI Library', '{{ui_library}}', '{{version}}', '{{purpose}}', '{{why_chosen}}']
+          - [
+              'State Management',
+              '{{state_management}}',
+              '{{version}}',
+              '{{purpose}}',
+              '{{why_chosen}}',
+            ]
+          - ['Routing', '{{routing_library}}', '{{version}}', '{{purpose}}', '{{why_chosen}}']
+          - ['Build Tool', '{{build_tool}}', '{{version}}', '{{purpose}}', '{{why_chosen}}']
+          - ['Styling', '{{styling_solution}}', '{{version}}', '{{purpose}}', '{{why_chosen}}']
+          - ['Testing', '{{test_framework}}', '{{version}}', '{{purpose}}', '{{why_chosen}}']
+          - [
+              'Component Library',
+              '{{component_lib}}',
+              '{{version}}',
+              '{{purpose}}',
+              '{{why_chosen}}',
+            ]
+
+  - id: project-structure
+    title: Project Structure
+    instruction: Definir estrutura de diretórios exata baseada no framework escolhido.
+    elicit: true
+    type: code
+    language: plaintext
+
+  - id: component-standards
+    title: Component Standards
+    instruction: Definir padrões exatos para criação de componentes.
+    elicit: true
+    sections:
+      - id: component-template
+        title: Component Template
+        instruction: Template minimal mas completo com TypeScript, imports e estrutura básica.
+        type: code
+        language: typescript
+      - id: naming-conventions
+        title: Naming Conventions
+        instruction: Convenções de nomenclatura para componentes, arquivos, serviços, state management.
+
+  - id: state-management
+    title: State Management
+    elicit: true
+    sections:
+      - id: store-structure
+        title: Store Structure
+        instruction: Estrutura de diretórios do state management para o framework escolhido.
+        type: code
+        language: plaintext
+      - id: state-template
+        title: State Management Template
+        instruction: Template básico com TypeScript types e operações comuns (set, update, clear).
+        type: code
+        language: typescript
+
+  - id: api-integration
+    title: API Integration
+    elicit: true
+    sections:
+      - id: service-template
+        title: Service Template
+        instruction: Template de serviço API com TypeScript types, error handling e async patterns.
+        type: code
+        language: typescript
+      - id: api-client-config
+        title: API Client Configuration
+        instruction: Configuração do HTTP client com interceptors de auth e error handling.
+        type: code
+        language: typescript
+
+  - id: routing
+    title: Routing
+    elicit: true
+    sections:
+      - id: route-configuration
+        title: Route Configuration
+        instruction: Configuração de rotas com protected routes, lazy loading e auth guards.
+        type: code
+        language: typescript
+
+  - id: styling-guidelines
+    title: Styling Guidelines
+    elicit: true
+    sections:
+      - id: styling-approach
+        title: Styling Approach
+        instruction: Metodologia de styling para o framework (CSS Modules, Styled Components, Tailwind, etc.)
+      - id: global-theme
+        title: Global Theme Variables
+        instruction: Sistema de CSS custom properties com cores, espaçamento, tipografia e dark mode.
+        type: code
+        language: css
+
+  - id: testing-requirements
+    title: Testing Requirements
+    elicit: true
+    sections:
+      - id: component-test-template
+        title: Component Test Template
+        instruction: Template básico de teste com rendering tests, user interaction e mocking.
+        type: code
+        language: typescript
+      - id: testing-best-practices
+        title: Testing Best Practices
+        type: numbered-list
+        items:
+          - '**Unit Tests**: Testar componentes individuais em isolamento'
+          - '**Integration Tests**: Testar interações entre componentes'
+          - '**E2E Tests**: Testar fluxos críticos com Cypress/Playwright'
+          - '**Coverage**: Almejar 80% de cobertura de código'
+          - '**Test Structure**: Padrão Arrange-Act-Assert'
+          - '**Mock External Dependencies**: APIs, routing, state management'
+
+  - id: environment-configuration
+    title: Environment Configuration
+    instruction: Listar variáveis de ambiente necessárias com formato e convenções de nomenclatura.
+    elicit: true
+
+  - id: frontend-developer-standards
+    title: Frontend Developer Standards
+    sections:
+      - id: critical-coding-rules
+        title: Critical Coding Rules
+        instruction: Regras essenciais que previnem erros comuns de IA — universais e específicas do framework.
+        elicit: true
+      - id: quick-reference
+        title: Quick Reference
+        instruction: |
+          Cheat sheet específico do framework:
+          - Comandos comuns (dev server, build, test)
+          - Padrões de import chave
+          - Convenções de nomenclatura de arquivos
+          - Padrões e utilitários específicos do projeto

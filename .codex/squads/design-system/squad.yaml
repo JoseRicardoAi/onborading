@@ -1,0 +1,27 @@
+squad:
+  name: 'design-system'
+  description: 'Squad responsavel por orquestrar e implementar o Design System unificado para Web e Mobile de qualquer projeto gerenciado no ambiente Codex/AIOX. No inicio de cada sessao, o usuario informa o caminho raiz do projeto alvo.'
+  context_setup:
+    instructions: |
+      Antes de iniciar qualquer operação, solicite ao usuário as seguintes informações caso ainda não tenham sido fornecidas:
+      1. Caminho raiz do projeto alvo (ex: projetos/meu-app/) — necessário para localizar arquivos de guidelines.
+      2. ID do NotebookLM Web do projeto (opcional, se existir — para consulta de design tokens web).
+      3. ID do NotebookLM Mobile do projeto (opcional, se existir — para consulta de design tokens mobile).
+      Esses dados ficam fixos para a sessão atual.
+  agents:
+    - name: '@web-ds-architect'
+      role: 'Web Design System Architect'
+      expertise: ['TypeScript', 'Frontend Frameworks', 'CSS/SCSS', 'UI Libraries']
+      skill: '.codex/squads/design-system/skills/skill-web-design-system.md'
+      responsibilities:
+        - Ler e aplicar as diretrizes de ui-guidelines-web.yaml do projeto informado pelo usuário.
+        - Criar componentes base respeitando a stack e as regras de implementation-rules-web.md do projeto.
+    - name: '@mobile-ds-architect'
+      role: 'Mobile Design System Architect'
+      expertise: ['Dart', 'Flutter', 'React Native', 'Mobile UI Libraries']
+      skill: '.codex/squads/design-system/skills/skill-mobile-design-system.md'
+      responsibilities:
+        - Ler e aplicar as diretrizes de ui-guidelines-mobile.yaml do projeto informado pelo usuário.
+        - Criar componentes base respeitando a stack e as regras de implementation-rules-mobile.md do projeto.
+  workflows:
+    - '.codex/squads/design-system/workflows/generate-screen.md'

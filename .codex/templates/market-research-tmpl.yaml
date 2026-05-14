@@ -1,0 +1,196 @@
+template:
+  id: market-research-template-v2
+  name: Market Research Report
+  version: 2.0
+  output:
+    format: markdown
+    filename: docs/market-research.md
+    title: 'Market Research Report: {{project_product_name}}'
+
+workflow:
+  mode: interactive
+  elicitation: advanced-elicitation
+  custom_elicitation:
+    title: 'Ações de Elicitação — Market Research'
+    options:
+      - 'Expandir cálculos de market sizing com análise de sensibilidade'
+      - 'Deep dive em segmento de cliente específico'
+      - 'Analisar tendência emergente de mercado em detalhe'
+      - 'Comparar com mercado análogo'
+      - 'Stress test de premissas de mercado'
+      - 'Explorar oportunidades de mercado adjacente'
+      - 'Gerar cenários estratégicos (best/base/worst case)'
+      - 'Prosseguir para próxima seção'
+
+sections:
+  - id: executive-summary
+    title: Executive Summary
+    instruction: Fornecer overview dos achados chave, avaliação de oportunidade de mercado e recomendações. Escrever LAST.
+
+  - id: research-objectives
+    title: Research Objectives & Methodology
+    sections:
+      - id: objectives
+        title: Research Objectives
+        instruction: |
+          Listar os objetivos primários:
+          - Quais decisões esta pesquisa vai informar?
+          - Quais perguntas específicas precisam ser respondidas?
+          - Quais são os critérios de sucesso?
+      - id: methodology
+        title: Research Methodology
+        instruction: |
+          Fontes de dados (primárias/secundárias), frameworks de análise, período, limitações e premissas
+
+  - id: market-overview
+    title: Market Overview
+    sections:
+      - id: market-definition
+        title: Market Definition
+        instruction: |
+          Definir o mercado:
+          - Categoria de produto/serviço, escopo geográfico, segmentos de clientes, posição na cadeia de valor
+      - id: market-size-growth
+        title: Market Size & Growth
+        instruction: |
+          Calcular TAM, SAM, SOM com premissas claras.
+          Abordagens: top-down, bottom-up, ou teoria de valor.
+        sections:
+          - id: tam
+            title: Total Addressable Market (TAM)
+            instruction: Calcular e explicar a oportunidade total de mercado
+          - id: sam
+            title: Serviceable Addressable Market (SAM)
+            instruction: Porção do TAM que se pode realisticamente alcançar
+          - id: som
+            title: Serviceable Obtainable Market (SOM)
+            instruction: Porção que se pode realisticamente capturar
+      - id: market-trends
+        title: Market Trends & Drivers
+        sections:
+          - id: key-trends
+            title: Key Market Trends
+            instruction: Listar 3-5 tendências principais com impacto
+          - id: growth-drivers
+            title: Growth Drivers
+            instruction: Fatores primários impulsionando crescimento
+          - id: market-inhibitors
+            title: Market Inhibitors
+            instruction: Fatores restringindo crescimento
+
+  - id: customer-analysis
+    title: Customer Analysis
+    sections:
+      - id: segment-profiles
+        title: Target Segment Profiles
+        repeatable: true
+        sections:
+          - id: segment
+            title: 'Segment {{segment_number}}: {{segment_name}}'
+            template: |
+              - **Descrição:** {{brief_overview}}
+              - **Tamanho:** {{number_of_customers_market_value}}
+              - **Características:** {{key_demographics_firmographics}}
+              - **Necessidades & Pain Points:** {{primary_problems}}
+              - **Processo de Compra:** {{purchasing_decisions}}
+              - **Willingness to Pay:** {{price_sensitivity}}
+      - id: jobs-to-be-done
+        title: Jobs-to-be-Done Analysis
+        sections:
+          - id: functional-jobs
+            title: Functional Jobs
+            instruction: Tarefas práticas que clientes precisam completar
+          - id: emotional-jobs
+            title: Emotional Jobs
+            instruction: Sentimentos e percepções que clientes buscam
+          - id: social-jobs
+            title: Social Jobs
+            instruction: Como clientes querem ser percebidos
+      - id: customer-journey
+        title: Customer Journey Mapping
+        template: |
+          Para segmento primário:
+
+          1. **Awareness:** {{discovery_process}}
+          2. **Consideration:** {{evaluation_criteria}}
+          3. **Purchase:** {{decision_triggers}}
+          4. **Onboarding:** {{initial_expectations}}
+          5. **Usage:** {{interaction_patterns}}
+          6. **Advocacy:** {{referral_behaviors}}
+
+  - id: competitive-landscape
+    title: Competitive Landscape
+    sections:
+      - id: market-structure
+        title: Market Structure
+        instruction: Número de concorrentes, concentração, intensidade competitiva
+      - id: major-players
+        title: Major Players Analysis
+        instruction: Top 3-5 concorrentes com market share, pontos fortes/fracos, pricing
+      - id: competitive-positioning
+        title: Competitive Positioning
+        instruction: Value propositions, estratégias de diferenciação, gaps de mercado
+
+  - id: industry-analysis
+    title: Industry Analysis
+    sections:
+      - id: porters-five-forces
+        title: Porter's Five Forces Assessment
+        sections:
+          - id: supplier-power
+            title: 'Supplier Power: {{power_level}}'
+            template: '{{analysis_and_implications}}'
+          - id: buyer-power
+            title: 'Buyer Power: {{power_level}}'
+            template: '{{analysis_and_implications}}'
+          - id: competitive-rivalry
+            title: 'Competitive Rivalry: {{intensity_level}}'
+            template: '{{analysis_and_implications}}'
+          - id: threat-new-entry
+            title: 'Threat of New Entry: {{threat_level}}'
+            template: '{{analysis_and_implications}}'
+          - id: threat-substitutes
+            title: 'Threat of Substitutes: {{threat_level}}'
+            template: '{{analysis_and_implications}}'
+      - id: adoption-lifecycle
+        title: Technology Adoption Lifecycle Stage
+        instruction: |
+          Identificar onde o mercado está na curva de adoção:
+          - Estágio atual, implicações para estratégia, timeline esperado
+
+  - id: opportunity-assessment
+    title: Opportunity Assessment
+    sections:
+      - id: market-opportunities
+        title: Market Opportunities
+        repeatable: true
+        sections:
+          - id: opportunity
+            title: 'Opportunity {{opportunity_number}}: {{name}}'
+            template: |
+              - **Descrição:** {{what_is_the_opportunity}}
+              - **Tamanho/Potencial:** {{quantified_potential}}
+              - **Requisitos:** {{needed_to_capture}}
+              - **Riscos:** {{key_challenges}}
+      - id: strategic-recommendations
+        title: Strategic Recommendations
+        sections:
+          - id: go-to-market
+            title: Go-to-Market Strategy
+            instruction: Priorização de segmentos, posicionamento, canal, parcerias
+          - id: pricing-strategy
+            title: Pricing Strategy
+            instruction: Modelo recomendado, price points, métrica de valor, posição competitiva
+          - id: risk-mitigation
+            title: Risk Mitigation
+            instruction: Riscos de mercado, competitivos, de execução e regulatórios
+
+  - id: appendices
+    title: Appendices
+    sections:
+      - id: data-sources
+        title: A. Data Sources
+        instruction: Listar todas as fontes usadas na pesquisa
+      - id: calculations
+        title: B. Detailed Calculations
+        instruction: Incluir cálculos complexos ou modelos

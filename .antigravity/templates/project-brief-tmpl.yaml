@@ -1,0 +1,194 @@
+template:
+  id: project-brief-template-v2
+  name: Project Brief
+  version: 2.0
+  output:
+    format: markdown
+    filename: docs/brief.md
+    title: 'Project Brief: {{project_name}}'
+
+workflow:
+  mode: interactive
+  elicitation: advanced-elicitation
+  custom_elicitation:
+    title: 'Ações de Elicitação do Project Brief'
+    options:
+      - 'Expandir seção com detalhes mais específicos'
+      - 'Validar contra produtos similares bem-sucedidos'
+      - 'Stress test de premissas com edge cases'
+      - 'Explorar abordagens alternativas de solução'
+      - 'Analisar trade-offs de recursos/restrições'
+      - 'Gerar estratégias de mitigação de risco'
+      - 'Desafiar escopo da perspectiva MVP minimalista'
+      - 'Brainstorm de possibilidades criativas de features'
+      - 'E se tivéssemos [recurso/capacidade/tempo]...'
+      - 'Prosseguir para próxima seção'
+
+sections:
+  - id: introduction
+    instruction: |
+      Perguntar qual modo o usuário prefere:
+      1. **Modo Interativo** - Trabalhar cada seção colaborativamente
+      2. **Modo YOLO** - Gerar rascunho completo para revisão
+
+      Entender quais inputs estão disponíveis (brainstorming, pesquisa, análise competitiva).
+
+  - id: executive-summary
+    title: Executive Summary
+    instruction: |
+      Criar overview conciso que capture a essência do projeto:
+      - Conceito do produto em 1-2 frases
+      - Problema primário sendo resolvido
+      - Identificação do mercado-alvo
+      - Proposta de valor chave
+    template: '{{executive_summary_content}}'
+
+  - id: problem-statement
+    title: Problem Statement
+    instruction: |
+      Articular o problema com clareza e evidências:
+      - Estado atual e pain points
+      - Impacto do problema (quantificar se possível)
+      - Por que soluções existentes falham
+      - Urgência e importância de resolver agora
+    template: '{{detailed_problem_description}}'
+
+  - id: proposed-solution
+    title: Proposed Solution
+    instruction: |
+      Descrever a abordagem de solução em alto nível:
+      - Conceito e abordagem core
+      - Diferenciadores chave de soluções existentes
+      - Por que esta solução terá sucesso
+      - Visão de alto nível do produto
+    template: '{{solution_description}}'
+
+  - id: target-users
+    title: Target Users
+    instruction: |
+      Definir e caracterizar os usuários pretendidos com especificidade.
+      Para cada segmento incluir: perfil demográfico, comportamentos, necessidades, objetivos.
+    sections:
+      - id: primary-segment
+        title: 'Primary User Segment: {{segment_name}}'
+        template: '{{primary_user_description}}'
+      - id: secondary-segment
+        title: 'Secondary User Segment: {{segment_name}}'
+        condition: Tem segmento secundário de usuários
+        template: '{{secondary_user_description}}'
+
+  - id: goals-metrics
+    title: Goals & Success Metrics
+    instruction: Estabelecer objetivos claros e como medir sucesso. Metas SMART.
+    sections:
+      - id: business-objectives
+        title: Business Objectives
+        type: bullet-list
+        template: '- {{objective_with_metric}}'
+      - id: user-success-metrics
+        title: User Success Metrics
+        type: bullet-list
+        template: '- {{user_metric}}'
+      - id: kpis
+        title: Key Performance Indicators (KPIs)
+        type: bullet-list
+        template: '- {{kpi}}: {{definition_and_target}}'
+
+  - id: mvp-scope
+    title: MVP Scope
+    instruction: Definir o MVP claramente. Distinguir must-haves de nice-to-haves.
+    sections:
+      - id: core-features
+        title: Core Features (Must Have)
+        type: bullet-list
+        template: '- **{{feature}}:** {{description_and_rationale}}'
+      - id: out-of-scope
+        title: Out of Scope for MVP
+        type: bullet-list
+        template: '- {{feature_or_capability}}'
+      - id: mvp-success-criteria
+        title: MVP Success Criteria
+        template: '{{mvp_success_definition}}'
+
+  - id: post-mvp-vision
+    title: Post-MVP Vision
+    instruction: Delinear direção de longo prazo sem sobrecomprometer
+    sections:
+      - id: phase-2-features
+        title: Phase 2 Features
+        template: '{{next_priority_features}}'
+      - id: long-term-vision
+        title: Long-term Vision
+        template: '{{one_two_year_vision}}'
+      - id: expansion-opportunities
+        title: Expansion Opportunities
+        template: '{{potential_expansions}}'
+
+  - id: technical-considerations
+    title: Technical Considerations
+    instruction: Documentar restrições técnicas e preferências conhecidas.
+    sections:
+      - id: platform-requirements
+        title: Platform Requirements
+        template: |
+          - **Plataformas-alvo:** {{platforms}}
+          - **Suporte Browser/OS:** {{specific_requirements}}
+          - **Requisitos de Performance:** {{performance_specs}}
+      - id: technology-preferences
+        title: Technology Preferences
+        template: |
+          - **Frontend:** {{frontend_preferences}}
+          - **Backend:** {{backend_preferences}}
+          - **Database:** {{database_preferences}}
+          - **Hosting/Infrastructure:** {{infrastructure_preferences}}
+      - id: architecture-considerations
+        title: Architecture Considerations
+        template: |
+          - **Repository Structure:** {{repo_thoughts}}
+          - **Service Architecture:** {{service_thoughts}}
+          - **Integration Requirements:** {{integration_needs}}
+          - **Security/Compliance:** {{security_requirements}}
+
+  - id: constraints-assumptions
+    title: Constraints & Assumptions
+    sections:
+      - id: constraints
+        title: Constraints
+        template: |
+          - **Budget:** {{budget_info}}
+          - **Timeline:** {{timeline_info}}
+          - **Resources:** {{resource_info}}
+          - **Technical:** {{technical_constraints}}
+      - id: key-assumptions
+        title: Key Assumptions
+        type: bullet-list
+        template: '- {{assumption}}'
+
+  - id: risks-questions
+    title: Risks & Open Questions
+    sections:
+      - id: key-risks
+        title: Key Risks
+        type: bullet-list
+        template: '- **{{risk}}:** {{description_and_impact}}'
+      - id: open-questions
+        title: Open Questions
+        type: bullet-list
+        template: '- {{question}}'
+      - id: research-areas
+        title: Areas Needing Further Research
+        type: bullet-list
+        template: '- {{research_topic}}'
+
+  - id: next-steps
+    title: Next Steps
+    sections:
+      - id: immediate-actions
+        title: Immediate Actions
+        type: numbered-list
+        template: '{{action_item}}'
+      - id: pm-handoff
+        title: PM Handoff
+        content: |
+          Este Project Brief fornece o contexto completo para {{project_name}}.
+          Iniciar em 'Modo de Geração de PRD', revisar o brief e criar o PRD seção por seção.

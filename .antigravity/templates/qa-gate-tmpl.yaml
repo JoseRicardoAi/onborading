@@ -1,0 +1,73 @@
+# <!-- Powered by AIOX™ Core -->
+template:
+  id: qa-gate-template-v1
+  name: Quality Gate Decision
+  version: 1.0
+  output:
+    format: yaml
+    filename: qa.qaLocation/gates/{{epic_num}}.{{story_num}}-{{story_slug}}.yml
+    title: 'Quality Gate: {{epic_num}}.{{story_num}}'
+
+# Campos obrigatórios (manter primeiro)
+schema: 1
+story: '{{epic_num}}.{{story_num}}'
+story_title: '{{story_title}}'
+gate: '{{gate_status}}' # PASS|CONCERNS|FAIL|WAIVED
+status_reason: '{{status_reason}}' # Resumo de 1-2 frases do motivo da decisão
+reviewer: 'Quinn (Test Architect)'
+updated: '{{iso_timestamp}}'
+
+# Sempre presente mas só ativo quando WAIVED
+waiver: { active: false }
+
+# Issues (se houver) - Usar severity fixo: low | medium | high
+top_issues: []
+
+# Resumo de riscos (do task risk-profile se executado)
+risk_summary:
+  totals: { critical: 0, high: 0, medium: 0, low: 0 }
+  recommendations:
+    must_fix: []
+    monitor: []
+
+# Seção de exemplos usando block scalars
+examples:
+  with_issues: |
+    top_issues:
+      - id: "SEC-001"
+        severity: high  # APENAS: low|medium|high
+        finding: "Sem rate limiting no endpoint de login"
+        suggested_action: "Adicionar middleware de rate limiting antes de produção"
+      - id: "TEST-001"
+        severity: medium
+        finding: "Faltam integration tests para o fluxo de auth"
+        suggested_action: "Adicionar cobertura de testes para caminhos críticos"
+
+  when_waived: |
+    waiver:
+      active: true
+      reason: "Aceito para release MVP - será resolvido no próximo sprint"
+      approved_by: "Product Owner"
+
+# ============ Campos Estendidos Opcionais ============
+# Descomentar e usar se o time quiser mais detalhes
+
+optional_fields_examples:
+  quality_and_expiry: |
+    quality_score: 75  # 0-100 (pontuação opcional)
+    expires: "2025-01-26T00:00:00Z"  # Janela de freshness do gate
+
+  evidence: |
+    evidence:
+      tests_reviewed: 15
+      risks_identified: 3
+      trace:
+        ac_covered: [1, 2, 3]  # Números de AC com cobertura de teste
+        ac_gaps: [4]  # Números de AC sem cobertura
+
+  nfr_validation: |
+    nfr_validation:
+      security: { status: CONCERNS, notes: "Rate limiting ausente" }
+      performance: { status: PASS, notes: "" }
+      reliability: { status: PASS, notes: "" }
+      maintainability: { status: PASS, notes: "" }

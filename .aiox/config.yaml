@@ -1,0 +1,24 @@
+# AIOX Project Configuration
+version: 2.1.0
+project:
+  name: onborading
+  type: greenfield
+  github_owner: JoseRicardoAi
+  repository_url: https://github.com/JoseRicardoAi/onborading
+  created: 2026-05-14
+
+environment:
+  bootstrapped: true
+  bootstrap_date: 2026-05-14T00:00:00
+  bootstrap_mode: local-partial
+
+workflow:
+  current: greenfield-fullstack
+  phase: 0-bootstrap-local-complete
+
+permissions:
+  mode: ask
+
+settings:
+  auto_update_status: true
+  quality_gates_enabled: true

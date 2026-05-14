@@ -1,0 +1,18 @@
+{
+  "id": "design-system",
+  "name": "Design System Squad",
+  "description": "Orquestra e implementa o Design System unificado Web e Mobile para qualquer projeto operado no Codex/AIOX.",
+  "version": "1.0.0",
+  "agents": [
+    {
+      "command": "@web-ds-architect",
+      "name": "Web Design System Architect",
+      "description": "Especialista em design systems web (TypeScript, CSS, UI Libraries)"
+    },
+    {
+      "command": "@mobile-ds-architect",
+      "name": "Mobile Design System Architect",
+      "description": "Especialista em design systems mobile (Flutter, React Native)"
+    }
+  ]
+}

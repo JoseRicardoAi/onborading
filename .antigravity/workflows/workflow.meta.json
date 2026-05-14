@@ -1,0 +1,42 @@
+{
+  "categories": [
+    {
+      "id": "greenfield",
+      "name": "🆕 Projetos Novos (Greenfield)",
+      "workflows": [
+        { "command": "1", "id": "greenfield-fullstack", "description": "App full-stack completo do zero" },
+        { "command": "2", "id": "greenfield-service", "description": "Backend ou API pura do zero" },
+        { "command": "3", "id": "greenfield-ui", "description": "Frontend/UI do zero (com ou sem Stitch)" }
+      ]
+    },
+    {
+      "id": "brownfield",
+      "name": "🏗️ Projetos Existentes (Brownfield)",
+      "workflows": [
+        { "command": "4", "id": "brownfield-discovery", "description": "Mapeamento inicial de projeto desconhecido" },
+        { "command": "5", "id": "brownfield-fullstack", "description": "Evoluir um app full-stack legado" },
+        { "command": "6", "id": "brownfield-service", "description": "Evoluir um backend/API legado" },
+        { "command": "7", "id": "brownfield-ui", "description": "Evoluir um frontend/UI legado" }
+      ]
+    },
+    {
+      "id": "dev-cycle",
+      "name": "⚙️ Ciclo de Desenvolvimento",
+      "workflows": [
+        { "command": "8", "id": "spec-pipeline", "description": "Transformar ideias cruas em PRD e Backlog" },
+        { "command": "9", "id": "epic-orchestration", "description": "Gerenciar e fragmentar épico completo" },
+        { "command": "10", "id": "story-development-cycle", "description": "Implementar uma story específica do início ao fim" },
+        { "command": "11", "id": "qa-loop", "description": "Ciclo rápido de correção interativo (QA ↔ Dev)" }
+      ]
+    },
+    {
+      "id": "management",
+      "name": "🧩 Especialistas e Gestão",
+      "workflows": [
+        { "command": "12", "id": "design-system-build", "description": "Criar ou refatorar Design System" },
+        { "command": "13", "id": "create-squad", "description": "Clonar mentes e criar novo squad de IA" },
+        { "command": "14", "id": "auto-worktree", "description": "Isolar features em desenvolvimento paralelo" }
+      ]
+    }
+  ]
+}

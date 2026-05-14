@@ -1,0 +1,57 @@
+{
+  "generated_at": "2026-05-14T00:00:00-03:00",
+  "project_name": "onborading",
+  "project_path": "D:\\Antigravity\\Onborading",
+  "github": {
+    "owner": "JoseRicardoAi",
+    "repository_url": "https://github.com/JoseRicardoAi/onborading.git",
+    "gh_installed": true,
+    "gh_authenticated": true,
+    "auth_status": "logged_in"
+  },
+  "system": {
+    "os": "Windows",
+    "architecture": "x64"
+  },
+  "cli_tools": {
+    "git": {
+      "installed": true
+    },
+    "gh": {
+      "installed": true,
+      "authenticated": true
+    },
+    "node": {
+      "installed": true
+    },
+    "npm": {
+      "installed": true
+    },
+    "supabase": {
+      "installed": false
+    },
+    "railway": {
+      "installed": false
+    },
+    "docker": {
+      "installed": false
+    }
+  },
+  "repository": {
+    "initialized": true,
+    "remote_url": "https://github.com/JoseRicardoAi/onborading.git",
+    "branch": "main",
+    "safe_directory_required": false
+  },
+  "validation": {
+    "essential_complete": false,
+    "recommended_complete": false,
+    "ready_for_development": false
+  },
+  "notes": [
+    "Local AIOX bootstrap initialized.",
+    "Local Git repository created and origin remote configured.",
+    "GitHub CLI is authenticated for GitHub operations.",
+    "Supabase, Railway, and Docker are not installed in this environment."
+  ]
+}

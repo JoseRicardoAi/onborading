@@ -1,0 +1,176 @@
+template:
+  id: prd-template-v2
+  name: Product Requirements Document
+  version: 2.0
+  output:
+    format: markdown
+    filename: docs/prd.md
+    title: "{{project_name}} Product Requirements Document (PRD)"
+
+workflow:
+  mode: interactive
+  elicitation: advanced-elicitation
+
+sections:
+  - id: goals-context
+    title: Goals and Background Context
+    instruction: |
+      Perguntar se existe um Project Brief disponível. Se NÃO, recomendar criação usando project-brief-tmpl primeiro.
+      Se já existe, usar para popular Goals e Background Context.
+    sections:
+      - id: goals
+        title: Goals
+        type: bullet-list
+        instruction: Lista de outcomes desejados que o PRD entregará se bem-sucedido
+      - id: background
+        title: Background Context
+        type: paragraphs
+        instruction: 1-2 parágrafos resumindo contexto, o quê e por que resolve o problema
+      - id: changelog
+        title: Change Log
+        type: table
+        columns: [Data, Versão, Descrição, Autor]
+        instruction: Rastrear versões e mudanças do documento
+
+  - id: requirements
+    title: Requirements
+    instruction: Rascunhar lista de requisitos funcionais e não-funcionais
+    elicit: true
+    sections:
+      - id: functional
+        title: Functional
+        type: numbered-list
+        prefix: FR
+        instruction: Cada requisito com identificador FR (ex: FR6)
+        examples:
+          - "FR6: O sistema usa IA para detectar e avisar sobre itens potencialmente duplicados."
+      - id: non-functional
+        title: Non Functional
+        type: numbered-list
+        prefix: NFR
+        instruction: Cada requisito com identificador NFR (ex: NFR1)
+        examples:
+          - "NFR1: Uso do AWS deve permanecer dentro dos limites free-tier onde viável."
+
+  - id: ui-goals
+    title: User Interface Design Goals
+    condition: PRD tem requisitos UX/UI
+    instruction: |
+      Capturar visão de UI/UX de alto nível para guiar o Architect e UX.
+      Pré-popular seções com educated guesses, apresentar e pedir confirmação.
+      **REQUISITO EXCLUSIVO ANTIGRAVITY:** Se o ambiente de execução for o Antigravity (e não Antigravity/Cursor), perguntar e habilitar a Integração Google Stitch UI. Se habilitada, preencher a seção `stitch-ui-guidelines` para futura parametrização do `ui-guidelines.yaml`.
+    elicit: true
+    choices:
+      accessibility: [Nenhum, WCAG AA, WCAG AAA]
+      platforms: [Web Responsivo, Mobile Only, Desktop Only, Cross-Platform]
+      antigravity_stitch_ui: [Habilitado, Desabilitado]
+    sections:
+      - id: ux-vision
+        title: Overall UX Vision
+      - id: interaction-paradigms
+        title: Key Interaction Paradigms
+      - id: core-screens
+        title: Core Screens and Views
+        instruction: De uma perspectiva de produto, quais são as telas mais críticas?
+        examples:
+          - "Tela de Login"
+          - "Dashboard Principal"
+          - "Página de Detalhe de Item"
+          - "Página de Configurações"
+      - id: accessibility
+        title: "Acessibilidade: {Nenhum|WCAG AA|WCAG AAA|Requisitos Customizados}"
+      - id: branding
+        title: Branding
+        instruction: Elementos de branding ou guias de estilo conhecidos?
+      - id: target-platforms
+        title: "Plataformas-alvo: {Web Responsivo|Mobile Only|Desktop Only|Cross-Platform}"
+      - id: stitch-ui-guidelines
+        title: Google Stitch UI Guidelines (Antigravity Only)
+        condition: antigravity_stitch_ui == Habilitado
+        instruction: |
+          Se habilitado via Antigravity, coletar os seguintes parâmetros obrigatórios para a geração autônoma de telas via MCP:
+          1. Plataforma Alvo (Ex: Web, Mobile iOS, Mobile Android, Cross-platform)
+          2. Linguagem de Script/App (Ex: React, Svelte, Flutter)
+          3. Framework CSS (Ex: TailwindCSS, Vanilla CSS)
+          4. Design System (Cores principais, tipografia, espaçamentos)
+          5. Framework de Componentes (Ex: Shadcn UI, Vuetify)
+          Estes dados serão usados pelo @architect no Step 3 para gerar o arquivo `ui-guidelines.yaml`.
+
+  - id: technical-assumptions
+    title: Technical Assumptions
+    instruction: |
+      Coletar decisões técnicas que vão guiar o Architect.
+      Verificar .aiox-core/data/technical-preferences.md para pré-popular.
+    elicit: true
+    sections:
+      - id: repository-structure
+        title: "Repository Structure: {Monorepo|Polyrepo|Multi-repo}"
+      - id: service-architecture
+        title: Service Architecture
+        instruction: "DECISÃO CRÍTICA - Documentar arquitetura de serviços de alto nível (Monolith, Microservices, Serverless)."
+      - id: testing-requirements
+        title: Testing Requirements
+        instruction: "DECISÃO CRÍTICA - Documentar req de testes: unit only, integration, e2e, manual."
+      - id: additional-assumptions
+        title: Additional Technical Assumptions and Requests
+
+  - id: epic-list
+    title: Epic List
+    instruction: |
+      Apresentar lista de alto nível de todos os épicos para aprovação.
+      
+      CRÍTICO: Épicos DEVEM ser logicamente sequenciais seguindo melhores práticas ágeis:
+      - Cada épico entrega incremento significativo e deployável de funcionalidade testável
+      - Épico 1 deve estabelecer infraestrutura fundacional
+      - Subsequentes constroem sobre os anteriores
+    elicit: true
+    examples:
+      - "Épico 1: Fundação & Core Infrastructure: Setup, autenticação, user management"
+      - "Épico 2: Core Business Entities: CRUD das entidades principais"
+      - "Épico 3: User Workflows & Interações: Jornadas e processos"
+      - "Épico 4: Reporting & Analytics: Insights e visualização"
+
+  - id: epic-details
+    title: Épico {{epic_number}} {{epic_title}}
+    repeatable: true
+    instruction: |
+      Para cada épico, apresentar com todas as stories e acceptance criteria.
+      
+      REQUISITOS CRÍTICOS DE SEQUENCIAMENTO:
+      - Stories devem ser logicamente sequenciais
+      - Cada story é um "vertical slice" de funcionalidade completa
+      - Dimensionar stories para execução por agente IA em sessão focada
+      - "Desenvolvedor júnior trabalhando 2-4 horas" como referência
+    elicit: true
+    sections:
+      - id: story
+        title: Story {{epic_number}}.{{story_number}} {{story_title}}
+        repeatable: true
+        template: |
+          Como {{user_type}},
+          quero {{action}},
+          para {{benefit}}.
+        sections:
+          - id: acceptance-criteria
+            title: Acceptance Criteria
+            type: numbered-list
+            repeatable: true
+            instruction: |
+              Definir AC claros, abrangentes e testáveis.
+              - Precisamente definir o que "done" significa
+              - Não ambíguos, base para verificação
+              - Incluir NFRs críticos do PRD
+
+  - id: checklist-results
+    title: Checklist Results Report
+    instruction: Executar pm-checklist e popular resultados nesta seção.
+
+  - id: next-steps
+    title: Next Steps
+    sections:
+      - id: ux-expert-prompt
+        title: UX Expert Prompt
+        instruction: Prompt curto e direto para iniciar o UX Expert com este PRD.
+      - id: architect-prompt
+        title: Architect Prompt
+        instruction: Prompt curto e direto para iniciar o Architect com este PRD.

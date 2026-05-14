@@ -1,0 +1,7 @@
+{
+  "id": "_example",
+  "name": "Example Squad",
+  "description": "Squad de exemplo para template",
+  "version": "1.0.0",
+  "agents": []
+}

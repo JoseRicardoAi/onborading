@@ -1,0 +1,46 @@
+name: skill-creator
+version: 1.0.0
+description: Squad especialista em concepção, design inteligente e geração de novas Skills.
+author: AIOX
+license: MIT
+slashPrefix: skill-creator
+
+aiox:
+  minVersion: '2.1.0'
+  type: squad
+
+components:
+  agents:
+    - '@skill-researcher.md'
+    - '@skill-architect.md'
+    - '@mcp-specialist.md'
+  tasks:
+    - 'research-subject.md'
+    - 'define-synapse.md'
+    - 'select-integrations.md'
+    - 'generate-skill-files.md'
+  workflows:
+    - 'create-skill.md'
+  checklists: []
+  templates: []
+  tools: []
+  scripts: []
+
+config:
+  extends: none
+  runtimeTargets:
+    antigravity:
+      skillsDir: .antigravity/skills
+    codex:
+      skillsDir: .codex/skills
+
+dependencies:
+  node: []
+  python: []
+  squads: []
+
+tags:
+  - core
+  - orchestrator
+  - skills
+  - generator
