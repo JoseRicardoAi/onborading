@@ -1,9 +1,10 @@
+import { ChildrenFields } from '@/components/children-fields';
 import {
   measurementGuide,
   pantsSizes,
   shirtSizes,
   shoeSizes,
-} from '@/lib/onboarding-uniform';
+} from '@/lib/onboarding-form';
 import { validateAccessToken } from '@/lib/tokens';
 
 type OnboardingPageProps = {
@@ -13,6 +14,7 @@ type OnboardingPageProps = {
   searchParams?: Promise<{
     error?: string;
     submitted?: string;
+    fullName?: string;
     shirtSize?: string;
     pantsSize?: string;
     shoeSize?: string;
@@ -20,7 +22,7 @@ type OnboardingPageProps = {
 };
 
 const errorMessages: Record<string, string> = {
-  uniform: 'Revise os campos de uniforme e selecione apenas tamanhos validos.',
+  profile: 'Revise seus dados pessoais e os campos de uniforme antes de continuar.',
 };
 
 export default async function OnboardingTokenPage({
@@ -36,10 +38,13 @@ export default async function OnboardingTokenPage({
   const isSubmitted = resolvedSearchParams?.submitted === '1';
   const selectedUniform = isSubmitted
     ? [
+        resolvedSearchParams?.fullName,
         `Camiseta ${resolvedSearchParams?.shirtSize}`,
         `Calca ${resolvedSearchParams?.pantsSize}`,
         `Calcado ${resolvedSearchParams?.shoeSize}`,
-      ].join(' | ')
+      ]
+        .filter(Boolean)
+        .join(' | ')
     : null;
 
   switch (tokenState.kind) {
@@ -98,10 +103,11 @@ export default async function OnboardingTokenPage({
       <section className="onboarding-hero" aria-labelledby="onboarding-title">
         <div>
           <p className="eyebrow">Formulario do colaborador</p>
-          <h1 id="onboarding-title">Dados de uniforme</h1>
+          <h1 id="onboarding-title">Dados pessoais e uniforme</h1>
           <p className="lead">
-            Informe os tamanhos usando a tabela padrao brasileira para agilizar
-            a separacao de camiseta, calca e calcado.
+            Preencha suas informacoes basicas para o onboarding e confirme os
+            tamanhos de uniforme usando a tabela padrao brasileira. Se tiver
+            filhos, voce tambem ja pode cadastrar os aniversarios nesta etapa.
           </p>
         </div>
 
@@ -125,12 +131,12 @@ export default async function OnboardingTokenPage({
         <article className="admin-section onboarding-section">
           <header className="section-header">
             <div>
-              <p className="eyebrow">Preenchimento</p>
-              <h2>Selecione seus tamanhos</h2>
+              <p className="eyebrow">Etapa 1</p>
+              <h2>Seus dados de onboarding</h2>
             </div>
             <p className="section-copy">
-              Use os tamanhos mais proximos das medidas que voce ja utiliza no
-              dia a dia.
+              Comece pelos seus dados pessoais e, em seguida, confirme os itens
+              de uniforme que o RH vai preparar.
             </p>
           </header>
 
@@ -142,7 +148,7 @@ export default async function OnboardingTokenPage({
 
           {isSubmitted && selectedUniform ? (
             <p className="form-message form-message-success">
-              Dados de uniforme enviados com sucesso: {selectedUniform}.
+              Primeira etapa salva com sucesso: {selectedUniform}.
             </p>
           ) : null}
 
@@ -151,6 +157,100 @@ export default async function OnboardingTokenPage({
             action={`/api/public/onboarding/${token}/submit`}
             method="post"
           >
+            <div className="form-group">
+              <div className="section-header compact-header">
+                <div>
+                  <p className="eyebrow">Dados pessoais</p>
+                  <h3>Informacoes basicas</h3>
+                </div>
+              </div>
+
+              <label>
+                Nome completo
+                <input
+                  type="text"
+                  name="fullName"
+                  defaultValue={tokenState.employee.fullName}
+                  minLength={3}
+                  required
+                />
+              </label>
+
+              <div className="form-columns">
+                <label>
+                  Data de nascimento
+                  <input
+                    type="date"
+                    name="birthDate"
+                    defaultValue={
+                      tokenState.employee.birthDate
+                        ? tokenState.employee.birthDate.toISOString().slice(0, 10)
+                        : ''
+                    }
+                    required
+                  />
+                </label>
+
+                <label>
+                  Celular
+                  <input
+                    type="tel"
+                    name="phone"
+                    defaultValue={tokenState.employee.phone ?? ''}
+                    placeholder="(00) 00000-0000"
+                    required
+                  />
+                </label>
+              </div>
+
+              <label>
+                E-mail
+                <input
+                  type="email"
+                  name="email"
+                  defaultValue={tokenState.employee.email ?? ''}
+                  required
+                />
+              </label>
+
+              <label>
+                Instagram
+                <input
+                  type="text"
+                  name="instagram"
+                  defaultValue={tokenState.employee.instagram ?? ''}
+                  placeholder="@seuusuario"
+                />
+              </label>
+
+              <label>
+                Endereco residencial
+                <textarea
+                  name="residentialAddress"
+                  defaultValue={tokenState.employee.residentialAddress ?? ''}
+                  rows={3}
+                  required
+                />
+              </label>
+            </div>
+
+            <ChildrenFields
+              initialHasChildren={tokenState.employee.children.length > 0}
+              initialChildren={tokenState.employee.children.map((child) => ({
+                name: child.name,
+                gender: child.gender ?? '',
+                birthDate: child.birthDate.toISOString().slice(0, 10),
+              }))}
+            />
+
+            <div className="form-group">
+              <div className="section-header compact-header">
+                <div>
+                  <p className="eyebrow">Uniforme</p>
+                  <h3>Tamanhos para separacao</h3>
+                </div>
+              </div>
+
             <label>
               Tamanho da camiseta
               <select
@@ -213,22 +313,31 @@ export default async function OnboardingTokenPage({
                 Numeracao brasileira de calcados do 33 ao 45.
               </span>
             </label>
+            </div>
 
-            <button type="submit">Salvar dados de uniforme</button>
+            <button type="submit">Salvar primeira etapa</button>
           </form>
         </article>
 
         <aside className="admin-section onboarding-section">
           <header className="section-header">
             <div>
-              <p className="eyebrow">Guia rapido</p>
-              <h2>Tabela de medidas</h2>
+              <p className="eyebrow">Apoio ao preenchimento</p>
+              <h2>Tabela de medidas e orientacoes</h2>
             </div>
             <p className="section-copy">
-              Referencia visual para ajudar na escolha dos tamanhos mais usados
-              no Brasil.
+              Revise os tamanhos de uniforme e confirme se seus dados pessoais
+              ja estao atualizados antes de seguir para as proximas etapas.
             </p>
           </header>
+
+          <div className="info-card">
+            <strong>O que esta sendo coletado agora</strong>
+            <p>
+              Nome, nascimento, celular, e-mail, Instagram, endereco e dados
+              iniciais de uniforme, alem dos blocos dinamicos de filhos.
+            </p>
+          </div>
 
           <div className="measurements-table-wrapper">
             <table className="measurements-table">

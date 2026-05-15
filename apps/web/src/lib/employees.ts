@@ -32,6 +32,12 @@ export type EmployeeSummary = {
   } | null;
 };
 
+export type EmployeeChildInput = {
+  name: string;
+  gender: string;
+  birthDate: string;
+};
+
 export async function listEmployees(): Promise<EmployeeSummary[]> {
   if (!isDatabaseConfigured()) {
     return [];
@@ -85,7 +91,13 @@ export async function listEmployees(): Promise<EmployeeSummary[]> {
   }
 }
 
-export async function saveEmployeeUniformData(employeeId: string, uniform: {
+export async function saveEmployeeOnboardingProfile(employeeId: string, profile: {
+  fullName: string;
+  birthDate: string;
+  phone: string;
+  email: string;
+  instagram: string;
+  residentialAddress: string;
   shirtSize: string;
   pantsSize: string;
   shoeSize: string;
@@ -99,13 +111,47 @@ export async function saveEmployeeUniformData(employeeId: string, uniform: {
       id: employeeId,
     },
     data: {
-      uniformShirtSize: uniform.shirtSize,
-      uniformPantsSize: uniform.pantsSize,
-      uniformShoeSize: uniform.shoeSize,
+      fullName: profile.fullName,
+      birthDate: new Date(profile.birthDate),
+      phone: profile.phone,
+      email: profile.email,
+      instagram: profile.instagram || null,
+      residentialAddress: profile.residentialAddress,
+      uniformShirtSize: profile.shirtSize,
+      uniformPantsSize: profile.pantsSize,
+      uniformShoeSize: profile.shoeSize,
+      completionPercent: 30,
       status: 'pendente_informacoes',
     },
     select: {
       id: true,
+    },
+  });
+}
+
+export async function replaceEmployeeChildren(
+  employeeId: string,
+  children: EmployeeChildInput[],
+) {
+  if (!isDatabaseConfigured()) {
+    throw new Error('DATABASE_NOT_CONFIGURED');
+  }
+
+  await prisma.employee.update({
+    where: {
+      id: employeeId,
+    },
+    data: {
+      completionPercent: children.length > 0 ? 45 : 35,
+      status: 'pendente_informacoes',
+      children: {
+        deleteMany: {},
+        create: children.map((child) => ({
+          name: child.name,
+          gender: child.gender,
+          birthDate: new Date(child.birthDate),
+        })),
+      },
     },
   });
 }

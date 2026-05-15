@@ -3,6 +3,33 @@ import { Prisma } from '@prisma/client';
 import { getAppUrl } from '@/lib/app-url';
 import { isDatabaseConfigured, prisma } from '@/lib/prisma';
 
+type TokenRecordShape = {
+  id: string;
+  expiresAt: Date;
+  usedAt: Date | null;
+  revokedAt: Date | null;
+  employee: {
+    id: string;
+    fullName: string;
+    email: string | null;
+    birthDate: Date | null;
+    phone: string | null;
+    instagram: string | null;
+    residentialAddress: string | null;
+    status: string;
+    deletedAt: Date | null;
+    uniformShirtSize: string | null;
+    uniformPantsSize: string | null;
+    uniformShoeSize: string | null;
+    children: Array<{
+      id: string;
+      name: string;
+      gender: string | null;
+      birthDate: Date;
+    }>;
+  };
+};
+
 type TokenValidationResult =
   | {
       kind: 'valid';
@@ -10,10 +37,20 @@ type TokenValidationResult =
         id: string;
         fullName: string;
         email: string | null;
+        birthDate: Date | null;
+        phone: string | null;
+        instagram: string | null;
+        residentialAddress: string | null;
         status: string;
         uniformShirtSize: string | null;
         uniformPantsSize: string | null;
         uniformShoeSize: string | null;
+        children: Array<{
+          id: string;
+          name: string;
+          gender: string | null;
+          birthDate: Date;
+        }>;
       };
       tokenRecordId: string;
       expiresAt: Date;
@@ -118,7 +155,7 @@ export async function validateAccessToken(rawToken: string): Promise<TokenValida
   }
 
   try {
-    const tokenRecord = await prisma.onboardingAccessToken.findUnique({
+    const tokenRecord = (await prisma.onboardingAccessToken.findUnique({
       where: {
         tokenHash: hashAccessToken(rawToken),
       },
@@ -132,15 +169,30 @@ export async function validateAccessToken(rawToken: string): Promise<TokenValida
             id: true,
             fullName: true,
             email: true,
+            birthDate: true,
+            phone: true,
+            instagram: true,
+            residentialAddress: true,
             status: true,
             deletedAt: true,
             uniformShirtSize: true,
             uniformPantsSize: true,
             uniformShoeSize: true,
+            children: {
+              orderBy: {
+                createdAt: 'asc',
+              },
+              select: {
+                id: true,
+                name: true,
+                gender: true,
+                birthDate: true,
+              },
+            },
           },
         },
       },
-    });
+    })) as TokenRecordShape | null;
 
     if (!tokenRecord || tokenRecord.employee.deletedAt) {
       return { kind: 'invalid' };
@@ -164,10 +216,15 @@ export async function validateAccessToken(rawToken: string): Promise<TokenValida
         id: tokenRecord.employee.id,
         fullName: tokenRecord.employee.fullName,
         email: tokenRecord.employee.email,
+        birthDate: tokenRecord.employee.birthDate,
+        phone: tokenRecord.employee.phone,
+        instagram: tokenRecord.employee.instagram,
+        residentialAddress: tokenRecord.employee.residentialAddress,
         status: tokenRecord.employee.status,
         uniformShirtSize: tokenRecord.employee.uniformShirtSize,
         uniformPantsSize: tokenRecord.employee.uniformPantsSize,
         uniformShoeSize: tokenRecord.employee.uniformShoeSize,
+        children: tokenRecord.employee.children,
       },
       tokenRecordId: tokenRecord.id,
       expiresAt: tokenRecord.expiresAt,

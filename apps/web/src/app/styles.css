@@ -328,6 +328,15 @@ h1 {
   gap: 20px;
 }
 
+.form-group {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fcfdff;
+}
+
 .section-header {
   display: grid;
   gap: 10px;
@@ -336,6 +345,15 @@ h1 {
 .section-header h2 {
   margin: 0;
   font-size: 1.25rem;
+}
+
+.section-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.compact-header {
+  gap: 6px;
 }
 
 .section-copy,
@@ -370,6 +388,21 @@ h1 {
   border-radius: 6px;
   padding: 10px 12px;
   color: var(--secondary);
+}
+
+.info-card {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+.info-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
 }
 
 .admin-shortcuts {
@@ -412,6 +445,55 @@ h1 {
 .uniform-form {
   display: grid;
   gap: 18px;
+}
+
+.form-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.choice-group {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.choice-group legend {
+  padding: 0;
+  color: var(--secondary);
+  font-weight: 700;
+}
+
+.choice-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--secondary);
+  font-weight: 600;
+}
+
+.children-stack {
+  display: grid;
+  gap: 16px;
+}
+
+.child-card {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+}
+
+.child-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .uniform-form label {
@@ -472,7 +554,8 @@ h1 {
 @media (max-width: 820px) {
   .hero-panel,
   .onboarding-hero,
-  .onboarding-grid {
+  .onboarding-grid,
+  .form-columns {
     grid-template-columns: 1fr;
   }
 
