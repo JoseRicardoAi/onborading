@@ -131,3 +131,23 @@ export async function getAdminSession() {
 
   return readAdminSessionCookie(sessionCookie?.value);
 }
+
+export function getAdminSessionFromRequest(request: Request) {
+  const cookieHeader = request.headers.get('cookie');
+
+  if (!cookieHeader) {
+    return null;
+  }
+
+  const sessionPair = cookieHeader
+    .split(';')
+    .map((chunk) => chunk.trim())
+    .find((chunk) => chunk.startsWith(`${adminSessionCookieName}=`));
+
+  if (!sessionPair) {
+    return null;
+  }
+
+  const value = decodeURIComponent(sessionPair.split('=').slice(1).join('='));
+  return readAdminSessionCookie(value);
+}

@@ -52,6 +52,9 @@ Columns:
 - `email TEXT`
 - `instagram TEXT`
 - `residential_address TEXT`
+- `uniform_shirt_size TEXT`
+- `uniform_pants_size TEXT`
+- `uniform_shoe_size TEXT`
 - `status onboarding_status NOT NULL DEFAULT 'cadastro_iniciado'`
 - `completion_percent INTEGER NOT NULL DEFAULT 0`
 - `submitted_at TIMESTAMPTZ`
@@ -64,6 +67,7 @@ Notes:
 
 - Use `deleted_at` instead of physical delete if the business needs historical traceability.
 - `birth_date` may be nullable during preliminary creation but should be required before final submit.
+- Uniform sizes should follow Brazilian standard selections defined by the public onboarding form.
 
 ### 4.2 onboarding_access_tokens
 
@@ -394,4 +398,3 @@ Operational rules:
 - [ ] SQL migration generated.
 - [ ] Rollback script generated.
 - [ ] Backup policy confirmed.
-

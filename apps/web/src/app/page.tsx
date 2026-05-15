@@ -25,6 +25,9 @@ export default function HomePage() {
           <a className="button button-secondary" href="/login">
             Acesso administrativo
           </a>
+          <a className="button button-secondary" href="/funcionarios">
+            Cadastros do RH
+          </a>
           <a className="button button-secondary" href="/admin">
             Abrir painel
           </a>

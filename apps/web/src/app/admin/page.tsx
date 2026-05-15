@@ -1,12 +1,6 @@
 import { redirect } from 'next/navigation';
 import { getAdminSession } from '@/lib/auth';
-
-const dashboardItems = [
-  { label: 'Cadastros iniciados', value: '0' },
-  { label: 'Pendentes', value: '0' },
-  { label: 'Completos', value: '0' },
-  { label: 'Revisados', value: '0' },
-];
+import { getEmployeeMetrics } from '@/lib/employees';
 
 export default async function AdminPage() {
   const session = await getAdminSession();
@@ -14,6 +8,14 @@ export default async function AdminPage() {
   if (!session) {
     redirect('/login');
   }
+
+  const metrics = await getEmployeeMetrics();
+  const dashboardItems = [
+    { label: 'Cadastros iniciados', value: String(metrics.cadastroIniciado) },
+    { label: 'Pendentes', value: String(metrics.pendenteInformacoes) },
+    { label: 'Completos', value: String(metrics.cadastroCompleto) },
+    { label: 'Revisados', value: String(metrics.revisado) },
+  ];
 
   return (
     <main className="page-shell admin-shell">
@@ -33,6 +35,28 @@ export default async function AdminPage() {
           </button>
         </form>
       </header>
+
+      <section className="admin-section admin-shortcuts" aria-labelledby="shortcuts-title">
+        <div className="section-header">
+          <div>
+            <p className="eyebrow">Atalhos</p>
+            <h2 id="shortcuts-title">Proximos passos do RH</h2>
+          </div>
+          <p className="section-copy">
+            Comece o onboarding pela criacao do cadastro preliminar e acompanhe
+            a base administrativa de funcionarios.
+          </p>
+        </div>
+
+        <div className="actions" aria-label="Acoes administrativas">
+          <a className="button button-primary" href="/funcionarios/novo">
+            Novo cadastro
+          </a>
+          <a className="button button-secondary" href="/funcionarios">
+            Ver funcionarios
+          </a>
+        </div>
+      </section>
 
       <section className="dashboard-preview" aria-label="Resumo administrativo">
         {dashboardItems.map((item) => (

@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OnboardingStatus {
+  cadastro_iniciado
+  pendente_informacoes
+  cadastro_completo
+  revisado
+}
+
+model Employee {
+  id                   String                 @id @default(uuid()) @db.Uuid
+  fullName             String                 @map("full_name")
+  birthDate            DateTime?              @map("birth_date") @db.Date
+  phone                String?
+  email                String?
+  instagram            String?
+  residentialAddress   String?                @map("residential_address")
+  uniformShirtSize     String?                @map("uniform_shirt_size")
+  uniformPantsSize     String?                @map("uniform_pants_size")
+  uniformShoeSize      String?                @map("uniform_shoe_size")
+  status               OnboardingStatus       @default(cadastro_iniciado)
+  completionPercent    Int                    @default(0) @map("completion_percent")
+  submittedAt          DateTime?              @map("submitted_at") @db.Timestamptz(6)
+  reviewedAt           DateTime?              @map("reviewed_at") @db.Timestamptz(6)
+  createdAt            DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt            DateTime?              @map("deleted_at") @db.Timestamptz(6)
+  onboardingAccessTokens OnboardingAccessToken[]
+
+  @@index([status], map: "idx_employees_status")
+  @@index([fullName], map: "idx_employees_full_name")
+  @@index([deletedAt], map: "idx_employees_deleted_at")
+  @@map("employees")
+}
+
+model OnboardingAccessToken {
+  id               String    @id @default(uuid()) @db.Uuid
+  employeeId       String    @map("employee_id") @db.Uuid
+  tokenHash        String    @unique @map("token_hash")
+  expiresAt        DateTime  @map("expires_at") @db.Timestamptz(6)
+  usedAt           DateTime? @map("used_at") @db.Timestamptz(6)
+  revokedAt        DateTime? @map("revoked_at") @db.Timestamptz(6)
+  createdByAdminId String?   @map("created_by_admin_id") @db.Uuid
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  employee         Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  createdByAdmin   AdminUser? @relation(fields: [createdByAdminId], references: [id], onDelete: SetNull)
+
+  @@index([employeeId], map: "idx_onboarding_access_tokens_employee")
+  @@map("onboarding_access_tokens")
+}
+
+model AdminUser {
+  id          String                 @id @default(uuid()) @db.Uuid
+  email       String                 @unique
+  fullName    String?                @map("full_name")
+  isActive    Boolean                @default(true) @map("is_active")
+  createdAt   DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
+  tokensCreated OnboardingAccessToken[]
+
+  @@map("admin_users")
+}
