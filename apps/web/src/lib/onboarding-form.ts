@@ -147,3 +147,228 @@ export const onboardingChildrenSchema = z
   });
 
 export type OnboardingChildrenValues = z.infer<typeof onboardingChildrenSchema>;
+
+export const onboardingSpouseSchema = z
+  .object({
+    hasSpouse: z.enum(['yes', 'no']),
+    spouseName: optionalTrimmedString,
+    spousePhone: optionalTrimmedString,
+    weddingAnniversary: optionalTrimmedString,
+  })
+  .superRefine((value, ctx) => {
+    if (value.hasSpouse === 'yes') {
+      if (value.spouseName.length < 2) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Informe o nome do conjuge.',
+          path: ['spouseName'],
+        });
+      }
+
+      if (value.spousePhone.length < 8) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Informe o telefone do conjuge.',
+          path: ['spousePhone'],
+        });
+      }
+
+      if (
+        value.weddingAnniversary.length === 0 ||
+        Number.isNaN(Date.parse(value.weddingAnniversary))
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Informe a data de aniversario de casamento.',
+          path: ['weddingAnniversary'],
+        });
+      }
+    }
+  });
+
+export type OnboardingSpouseValues = z.infer<typeof onboardingSpouseSchema>;
+
+export const onboardingHealthSchema = z
+  .object({
+    continuousMedication: optionalTrimmedString,
+    allergies: optionalTrimmedString,
+    relevantCondition: optionalTrimmedString,
+    workRestriction: optionalTrimmedString,
+    additionalNotes: optionalTrimmedString,
+    healthConsent: z.enum(['accepted']).optional(),
+  })
+  .superRefine((value, ctx) => {
+    const hasSensitiveData = [
+      value.continuousMedication,
+      value.allergies,
+      value.relevantCondition,
+      value.workRestriction,
+      value.additionalNotes,
+    ].some((field) => field.length > 0);
+
+    if (hasSensitiveData && value.healthConsent !== 'accepted') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Aceite o consentimento para salvar informacoes de saude.',
+        path: ['healthConsent'],
+      });
+    }
+  });
+
+export type OnboardingHealthValues = z.infer<typeof onboardingHealthSchema>;
+
+export const onboardingEmergencyContactSchema = z.object({
+  emergencyContactName: z
+    .string()
+    .trim()
+    .min(2, 'Informe o nome do familiar ou responsavel.'),
+  emergencyContactPhone: z
+    .string()
+    .trim()
+    .min(8, 'Informe o numero de celular do contato de emergencia.'),
+  emergencyContactAddress: z
+    .string()
+    .trim()
+    .min(8, 'Informe o endereco do contato de emergencia.'),
+});
+
+export type OnboardingEmergencyContactValues = z.infer<
+  typeof onboardingEmergencyContactSchema
+>;
+
+export const onboardingEducationSchema = z
+  .object({
+    hasEducation: z.enum(['yes', 'no']),
+    institution: optionalTrimmedString,
+    courseName: optionalTrimmedString,
+    courseSchedule: optionalTrimmedString,
+    expectedEndDate: optionalTrimmedString,
+  })
+  .superRefine((value, ctx) => {
+    if (value.hasEducation === 'yes') {
+      if (value.institution.length < 2) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Informe a instituicao.',
+          path: ['institution'],
+        });
+      }
+
+      if (value.courseName.length < 2) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Informe o curso.',
+          path: ['courseName'],
+        });
+      }
+
+      if (value.courseSchedule.length < 3) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Informe o horario do curso.',
+          path: ['courseSchedule'],
+        });
+      }
+
+      if (
+        value.expectedEndDate.length === 0 ||
+        Number.isNaN(Date.parse(value.expectedEndDate))
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Informe a previsao de termino.',
+          path: ['expectedEndDate'],
+        });
+      }
+    }
+  });
+
+export type OnboardingEducationValues = z.infer<typeof onboardingEducationSchema>;
+
+export const onboardingFinalizeSchema = z.object({
+  finalConfirmation: z.literal('accepted', {
+    errorMap: () => ({
+      message: 'Confirme a revisao dos dados antes de finalizar.',
+    }),
+  }),
+});
+
+export type OnboardingFinalizeValues = z.infer<typeof onboardingFinalizeSchema>;
+
+export type OnboardingCompletionSnapshot = {
+  fullName: string;
+  birthDate: Date | null;
+  phone: string | null;
+  email: string | null;
+  residentialAddress: string | null;
+  uniformShirtSize: string | null;
+  uniformPantsSize: string | null;
+  uniformShoeSize: string | null;
+  emergencyContact: {
+    name: string;
+    phone: string;
+    address: string | null;
+  } | null;
+};
+
+export function getOnboardingCompletionIssues(
+  snapshot: OnboardingCompletionSnapshot,
+) {
+  const issues: string[] = [];
+
+  if (!snapshot.fullName || snapshot.fullName.trim().length < 3) {
+    issues.push('Nome completo');
+  }
+
+  if (!snapshot.birthDate) {
+    issues.push('Data de nascimento');
+  }
+
+  if (!snapshot.phone || snapshot.phone.trim().length < 8) {
+    issues.push('Celular');
+  }
+
+  if (!snapshot.email || snapshot.email.trim().length === 0) {
+    issues.push('E-mail');
+  }
+
+  if (
+    !snapshot.residentialAddress ||
+    snapshot.residentialAddress.trim().length < 8
+  ) {
+    issues.push('Endereco residencial');
+  }
+
+  if (!snapshot.uniformShirtSize) {
+    issues.push('Tamanho da camiseta');
+  }
+
+  if (!snapshot.uniformPantsSize) {
+    issues.push('Numeracao da calca');
+  }
+
+  if (!snapshot.uniformShoeSize) {
+    issues.push('Tamanho do calcado');
+  }
+
+  if (!snapshot.emergencyContact) {
+    issues.push('Contato de emergencia');
+  } else {
+    if (snapshot.emergencyContact.name.trim().length < 2) {
+      issues.push('Nome do contato de emergencia');
+    }
+
+    if (snapshot.emergencyContact.phone.trim().length < 8) {
+      issues.push('Celular do contato de emergencia');
+    }
+
+    if (
+      !snapshot.emergencyContact.address ||
+      snapshot.emergencyContact.address.trim().length < 8
+    ) {
+      issues.push('Endereco do contato de emergencia');
+    }
+  }
+
+  return issues;
+}

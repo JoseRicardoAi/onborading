@@ -38,6 +38,36 @@ export type EmployeeChildInput = {
   birthDate: string;
 };
 
+export type EmployeeSpouseInput = {
+  hasSpouse: 'yes' | 'no';
+  spouseName: string;
+  spousePhone: string;
+  weddingAnniversary: string;
+};
+
+export type EmployeeHealthInput = {
+  continuousMedication: string;
+  allergies: string;
+  relevantCondition: string;
+  workRestriction: string;
+  additionalNotes: string;
+  healthConsent?: 'accepted';
+};
+
+export type EmployeeEmergencyContactInput = {
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  emergencyContactAddress: string;
+};
+
+export type EmployeeEducationInput = {
+  hasEducation: 'yes' | 'no';
+  institution: string;
+  courseName: string;
+  courseSchedule: string;
+  expectedEndDate: string;
+};
+
 export async function listEmployees(): Promise<EmployeeSummary[]> {
   if (!isDatabaseConfigured()) {
     return [];
@@ -152,6 +182,214 @@ export async function replaceEmployeeChildren(
           birthDate: new Date(child.birthDate),
         })),
       },
+    },
+  });
+}
+
+export async function upsertEmployeeSpouse(
+  employeeId: string,
+  spouse: EmployeeSpouseInput,
+) {
+  if (!isDatabaseConfigured()) {
+    throw new Error('DATABASE_NOT_CONFIGURED');
+  }
+
+  if (spouse.hasSpouse === 'no') {
+    await prisma.spouse.deleteMany({
+      where: {
+        employeeId,
+      },
+    });
+
+    await prisma.employee.update({
+      where: { id: employeeId },
+      data: {
+        completionPercent: 55,
+        status: 'pendente_informacoes',
+      },
+    });
+
+    return;
+  }
+
+  await prisma.spouse.upsert({
+    where: {
+      employeeId,
+    },
+    create: {
+      employeeId,
+      name: spouse.spouseName,
+      phone: spouse.spousePhone,
+      weddingAnniversary: new Date(spouse.weddingAnniversary),
+    },
+    update: {
+      name: spouse.spouseName,
+      phone: spouse.spousePhone,
+      weddingAnniversary: new Date(spouse.weddingAnniversary),
+    },
+  });
+
+  await prisma.employee.update({
+    where: {
+      id: employeeId,
+    },
+    data: {
+      completionPercent: 60,
+      status: 'pendente_informacoes',
+    },
+  });
+}
+
+export async function upsertEmployeeHealthProfile(
+  employeeId: string,
+  health: EmployeeHealthInput,
+) {
+  if (!isDatabaseConfigured()) {
+    throw new Error('DATABASE_NOT_CONFIGURED');
+  }
+
+  const hasSensitiveData = [
+    health.continuousMedication,
+    health.allergies,
+    health.relevantCondition,
+    health.workRestriction,
+    health.additionalNotes,
+  ].some((field) => field.length > 0);
+
+  if (!hasSensitiveData) {
+    await prisma.healthProfile.deleteMany({
+      where: {
+        employeeId,
+      },
+    });
+
+    await prisma.employee.update({
+      where: { id: employeeId },
+      data: {
+        completionPercent: 65,
+        status: 'pendente_informacoes',
+      },
+    });
+
+    return;
+  }
+
+  await prisma.healthProfile.upsert({
+    where: {
+      employeeId,
+    },
+    create: {
+      employeeId,
+      continuousMedication: health.continuousMedication || null,
+      allergies: health.allergies || null,
+      relevantCondition: health.relevantCondition || null,
+      workRestriction: health.workRestriction || null,
+      additionalNotes: health.additionalNotes || null,
+      consentAcceptedAt: new Date(),
+    },
+    update: {
+      continuousMedication: health.continuousMedication || null,
+      allergies: health.allergies || null,
+      relevantCondition: health.relevantCondition || null,
+      workRestriction: health.workRestriction || null,
+      additionalNotes: health.additionalNotes || null,
+      consentAcceptedAt: new Date(),
+    },
+  });
+
+  await prisma.employee.update({
+    where: { id: employeeId },
+    data: {
+      completionPercent: 75,
+      status: 'pendente_informacoes',
+    },
+  });
+}
+
+export async function upsertEmployeeEmergencyContact(
+  employeeId: string,
+  contact: EmployeeEmergencyContactInput,
+) {
+  if (!isDatabaseConfigured()) {
+    throw new Error('DATABASE_NOT_CONFIGURED');
+  }
+
+  await prisma.emergencyContact.upsert({
+    where: {
+      employeeId,
+    },
+    create: {
+      employeeId,
+      name: contact.emergencyContactName,
+      phone: contact.emergencyContactPhone,
+      address: contact.emergencyContactAddress,
+    },
+    update: {
+      name: contact.emergencyContactName,
+      phone: contact.emergencyContactPhone,
+      address: contact.emergencyContactAddress,
+    },
+  });
+
+  await prisma.employee.update({
+    where: { id: employeeId },
+    data: {
+      completionPercent: 85,
+      status: 'pendente_informacoes',
+    },
+  });
+}
+
+export async function upsertEmployeeEducationProfile(
+  employeeId: string,
+  education: EmployeeEducationInput,
+) {
+  if (!isDatabaseConfigured()) {
+    throw new Error('DATABASE_NOT_CONFIGURED');
+  }
+
+  if (education.hasEducation === 'no') {
+    await prisma.educationProfile.deleteMany({
+      where: {
+        employeeId,
+      },
+    });
+
+    await prisma.employee.update({
+      where: { id: employeeId },
+      data: {
+        completionPercent: 90,
+        status: 'pendente_informacoes',
+      },
+    });
+
+    return;
+  }
+
+  await prisma.educationProfile.upsert({
+    where: {
+      employeeId,
+    },
+    create: {
+      employeeId,
+      institution: education.institution,
+      courseName: education.courseName,
+      courseSchedule: education.courseSchedule,
+      expectedEndDate: new Date(education.expectedEndDate),
+    },
+    update: {
+      institution: education.institution,
+      courseName: education.courseName,
+      courseSchedule: education.courseSchedule,
+      expectedEndDate: new Date(education.expectedEndDate),
+    },
+  });
+
+  await prisma.employee.update({
+    where: { id: employeeId },
+    data: {
+      completionPercent: 95,
+      status: 'pendente_informacoes',
     },
   });
 }

@@ -1,5 +1,10 @@
 import { ChildrenFields } from '@/components/children-fields';
+import { EducationFields } from '@/components/education-fields';
+import { EmergencyContactFields } from '@/components/emergency-contact-fields';
+import { HealthFields } from '@/components/health-fields';
+import { SpouseFields } from '@/components/spouse-fields';
 import {
+  getOnboardingCompletionIssues,
   measurementGuide,
   pantsSizes,
   shirtSizes,
@@ -22,7 +27,11 @@ type OnboardingPageProps = {
 };
 
 const errorMessages: Record<string, string> = {
-  profile: 'Revise seus dados pessoais e os campos de uniforme antes de continuar.',
+  profile:
+    'Revise os dados do formulario antes de continuar. Existem campos obrigatorios invalidos ou incompletos.',
+  finalize: 'Confirme a revisao final dos dados antes de concluir o onboarding.',
+  incomplete:
+    'Salve os dados obrigatorios e o contato de emergencia antes de finalizar.',
 };
 
 export default async function OnboardingTokenPage({
@@ -97,6 +106,39 @@ export default async function OnboardingTokenPage({
     case 'valid':
       break;
   }
+
+  const completionIssues = getOnboardingCompletionIssues(tokenState.employee);
+  const reviewItems = [
+    {
+      label: 'Dados pessoais',
+      complete: Boolean(
+        tokenState.employee.birthDate &&
+          tokenState.employee.phone &&
+          tokenState.employee.email &&
+          tokenState.employee.residentialAddress,
+      ),
+      description: 'Nome, nascimento, celular, e-mail e endereco residencial.',
+    },
+    {
+      label: 'Uniforme',
+      complete: Boolean(
+        tokenState.employee.uniformShirtSize &&
+          tokenState.employee.uniformPantsSize &&
+          tokenState.employee.uniformShoeSize,
+      ),
+      description: 'Camiseta, calca e calcado em tabela brasileira.',
+    },
+    {
+      label: 'Contato de emergencia',
+      complete: Boolean(tokenState.employee.emergencyContact),
+      description: 'Nome, celular e endereco do contato responsavel.',
+    },
+    {
+      label: 'Blocos complementares',
+      complete: true,
+      description: 'Filhos, conjuge, saude e vida academica sao condicionais ou opcionais.',
+    },
+  ];
 
   return (
     <main className="page-shell onboarding-shell">
@@ -243,6 +285,64 @@ export default async function OnboardingTokenPage({
               }))}
             />
 
+            <SpouseFields
+              initialHasSpouse={Boolean(tokenState.employee.spouse)}
+              initialSpouseName={tokenState.employee.spouse?.name ?? ''}
+              initialSpousePhone={tokenState.employee.spouse?.phone ?? ''}
+              initialWeddingAnniversary={
+                tokenState.employee.spouse?.weddingAnniversary
+                  ? tokenState.employee.spouse.weddingAnniversary
+                      .toISOString()
+                      .slice(0, 10)
+                  : ''
+              }
+            />
+
+            <HealthFields
+              initialContinuousMedication={
+                tokenState.employee.healthProfile?.continuousMedication ?? ''
+              }
+              initialAllergies={tokenState.employee.healthProfile?.allergies ?? ''}
+              initialRelevantCondition={
+                tokenState.employee.healthProfile?.relevantCondition ?? ''
+              }
+              initialWorkRestriction={
+                tokenState.employee.healthProfile?.workRestriction ?? ''
+              }
+              initialAdditionalNotes={
+                tokenState.employee.healthProfile?.additionalNotes ?? ''
+              }
+              hasStoredConsent={Boolean(
+                tokenState.employee.healthProfile?.consentAcceptedAt,
+              )}
+            />
+
+            <EmergencyContactFields
+              initialName={tokenState.employee.emergencyContact?.name ?? ''}
+              initialPhone={tokenState.employee.emergencyContact?.phone ?? ''}
+              initialAddress={tokenState.employee.emergencyContact?.address ?? ''}
+            />
+
+            <EducationFields
+              initialHasEducation={Boolean(tokenState.employee.educationProfile)}
+              initialInstitution={
+                tokenState.employee.educationProfile?.institution ?? ''
+              }
+              initialCourseName={
+                tokenState.employee.educationProfile?.courseName ?? ''
+              }
+              initialCourseSchedule={
+                tokenState.employee.educationProfile?.courseSchedule ?? ''
+              }
+              initialExpectedEndDate={
+                tokenState.employee.educationProfile?.expectedEndDate
+                  ? tokenState.employee.educationProfile.expectedEndDate
+                      .toISOString()
+                      .slice(0, 10)
+                  : ''
+              }
+            />
+
             <div className="form-group">
               <div className="section-header compact-header">
                 <div>
@@ -315,8 +415,56 @@ export default async function OnboardingTokenPage({
             </label>
             </div>
 
-            <button type="submit">Salvar primeira etapa</button>
+            <button type="submit">Salvar dados e continuar depois</button>
           </form>
+
+          <div className="form-group finalize-group">
+            <div className="section-header compact-header">
+              <div>
+                <p className="eyebrow">Etapa final</p>
+                <h3>Revisar e enviar onboarding</h3>
+              </div>
+              <p className="section-copy">
+                Quando todos os dados obrigatorios estiverem preenchidos, finalize
+                o formulario para encerrar este link.
+              </p>
+            </div>
+
+            <ul className="review-list" aria-label="Checklist de revisao">
+              {reviewItems.map((item) => (
+                <li key={item.label} className="review-item">
+                  <strong>{item.complete ? 'Completo' : 'Pendente'}</strong>
+                  <span>{item.label}</span>
+                  <p>{item.description}</p>
+                </li>
+              ))}
+            </ul>
+
+            {completionIssues.length > 0 ? (
+              <p className="form-message form-message-error" role="alert">
+                Pendencias para concluir: {completionIssues.join(', ')}.
+              </p>
+            ) : (
+              <p className="form-message form-message-success">
+                Tudo certo: voce ja pode enviar o onboarding para o RH.
+              </p>
+            )}
+
+            <form
+              className="finalize-form"
+              action={`/api/public/onboarding/${token}/finalize`}
+              method="post"
+            >
+              <label className="consent-option">
+                <input type="checkbox" name="finalConfirmation" value="accepted" />
+                Revisei meus dados e autorizo o envio final deste onboarding.
+              </label>
+
+              <button type="submit" disabled={completionIssues.length > 0}>
+                Enviar onboarding
+              </button>
+            </form>
+          </div>
         </article>
 
         <aside className="admin-section onboarding-section">
@@ -335,7 +483,17 @@ export default async function OnboardingTokenPage({
             <strong>O que esta sendo coletado agora</strong>
             <p>
               Nome, nascimento, celular, e-mail, Instagram, endereco e dados
-              iniciais de uniforme, alem dos blocos dinamicos de filhos.
+              iniciais de uniforme, alem dos blocos dinamicos de filhos e do
+              bloco condicional de conjuge e das informacoes de saude com
+              consentimento, junto do contato de emergencia e da vida academica.
+            </p>
+          </div>
+
+          <div className="info-card">
+            <strong>Como funciona o envio final</strong>
+            <p>
+              Primeiro salve seus dados. Depois revise o checklist ao lado e use
+              o botao de envio final para concluir o formulario e bloquear este link.
             </p>
           </div>
 

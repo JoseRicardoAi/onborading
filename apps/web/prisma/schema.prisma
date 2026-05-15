@@ -33,6 +33,10 @@ model Employee {
   updatedAt            DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt            DateTime?              @map("deleted_at") @db.Timestamptz(6)
   children             Child[]
+  educationProfile     EducationProfile?
+  emergencyContact     EmergencyContact?
+  healthProfile        HealthProfile?
+  spouse               Spouse?
   onboardingAccessTokens OnboardingAccessToken[]
 
   @@index([status], map: "idx_employees_status")
@@ -53,6 +57,62 @@ model Child {
 
   @@index([employeeId], map: "idx_children_employee")
   @@map("children")
+}
+
+model Spouse {
+  id                  String   @id @default(uuid()) @db.Uuid
+  employeeId          String   @unique @map("employee_id") @db.Uuid
+  name                String
+  phone               String?
+  weddingAnniversary  DateTime? @map("wedding_anniversary") @db.Date
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  employee            Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("spouses")
+}
+
+model HealthProfile {
+  id                   String    @id @default(uuid()) @db.Uuid
+  employeeId           String    @unique @map("employee_id") @db.Uuid
+  continuousMedication String?   @map("continuous_medication")
+  allergies            String?
+  relevantCondition    String?   @map("relevant_condition")
+  workRestriction      String?   @map("work_restriction")
+  additionalNotes      String?   @map("additional_notes")
+  consentAcceptedAt    DateTime? @map("consent_accepted_at") @db.Timestamptz(6)
+  createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  employee             Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("health_profiles")
+}
+
+model EmergencyContact {
+  id        String   @id @default(uuid()) @db.Uuid
+  employeeId String  @unique @map("employee_id") @db.Uuid
+  name      String
+  phone     String
+  address   String?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  employee  Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("emergency_contacts")
+}
+
+model EducationProfile {
+  id             String    @id @default(uuid()) @db.Uuid
+  employeeId     String    @unique @map("employee_id") @db.Uuid
+  institution    String?
+  courseName     String?   @map("course_name")
+  courseSchedule String?   @map("course_schedule")
+  expectedEndDate DateTime? @map("expected_end_date") @db.Date
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  employee       Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("education_profiles")
 }
 
 model OnboardingAccessToken {

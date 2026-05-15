@@ -21,6 +21,30 @@ type TokenRecordShape = {
     uniformShirtSize: string | null;
     uniformPantsSize: string | null;
     uniformShoeSize: string | null;
+    educationProfile: {
+      institution: string | null;
+      courseName: string | null;
+      courseSchedule: string | null;
+      expectedEndDate: Date | null;
+    } | null;
+    emergencyContact: {
+      name: string;
+      phone: string;
+      address: string | null;
+    } | null;
+    healthProfile: {
+      continuousMedication: string | null;
+      allergies: string | null;
+      relevantCondition: string | null;
+      workRestriction: string | null;
+      additionalNotes: string | null;
+      consentAcceptedAt: Date | null;
+    } | null;
+    spouse: {
+      name: string;
+      phone: string | null;
+      weddingAnniversary: Date | null;
+    } | null;
     children: Array<{
       id: string;
       name: string;
@@ -45,6 +69,30 @@ type TokenValidationResult =
         uniformShirtSize: string | null;
         uniformPantsSize: string | null;
         uniformShoeSize: string | null;
+        educationProfile: {
+          institution: string | null;
+          courseName: string | null;
+          courseSchedule: string | null;
+          expectedEndDate: Date | null;
+        } | null;
+        emergencyContact: {
+          name: string;
+          phone: string;
+          address: string | null;
+        } | null;
+        healthProfile: {
+          continuousMedication: string | null;
+          allergies: string | null;
+          relevantCondition: string | null;
+          workRestriction: string | null;
+          additionalNotes: string | null;
+          consentAcceptedAt: Date | null;
+        } | null;
+        spouse: {
+          name: string;
+          phone: string | null;
+          weddingAnniversary: Date | null;
+        } | null;
         children: Array<{
           id: string;
           name: string;
@@ -155,43 +203,77 @@ export async function validateAccessToken(rawToken: string): Promise<TokenValida
   }
 
   try {
-    const tokenRecord = (await prisma.onboardingAccessToken.findUnique({
-      where: {
-        tokenHash: hashAccessToken(rawToken),
-      },
-      select: {
-        id: true,
-        expiresAt: true,
-        usedAt: true,
-        revokedAt: true,
-        employee: {
-          select: {
-            id: true,
-            fullName: true,
-            email: true,
-            birthDate: true,
-            phone: true,
-            instagram: true,
-            residentialAddress: true,
-            status: true,
-            deletedAt: true,
-            uniformShirtSize: true,
-            uniformPantsSize: true,
-            uniformShoeSize: true,
-            children: {
-              orderBy: {
-                createdAt: 'asc',
-              },
-              select: {
-                id: true,
-                name: true,
-                gender: true,
-                birthDate: true,
-              },
+    const tokenRecordSelect: Prisma.OnboardingAccessTokenFindUniqueArgs['select'] = {
+      id: true,
+      expiresAt: true,
+      usedAt: true,
+      revokedAt: true,
+      employee: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          birthDate: true,
+          phone: true,
+          instagram: true,
+          residentialAddress: true,
+          status: true,
+          deletedAt: true,
+          uniformShirtSize: true,
+          uniformPantsSize: true,
+          uniformShoeSize: true,
+          educationProfile: {
+            select: {
+              institution: true,
+              courseName: true,
+              courseSchedule: true,
+              expectedEndDate: true,
+            },
+          },
+          emergencyContact: {
+            select: {
+              name: true,
+              phone: true,
+              address: true,
+            },
+          },
+          healthProfile: {
+            select: {
+              continuousMedication: true,
+              allergies: true,
+              relevantCondition: true,
+              workRestriction: true,
+              additionalNotes: true,
+              consentAcceptedAt: true,
+            },
+          },
+          spouse: {
+            select: {
+              name: true,
+              phone: true,
+              weddingAnniversary: true,
+            },
+          },
+          children: {
+            orderBy: {
+              createdAt: 'asc',
+            },
+            select: {
+              id: true,
+              name: true,
+              gender: true,
+              birthDate: true,
             },
           },
         },
       },
+    };
+
+    const tokenRecord = (await prisma.onboardingAccessToken.findUnique({
+      where: {
+        tokenHash: hashAccessToken(rawToken),
+      },
+      select: tokenRecordSelect,
     })) as TokenRecordShape | null;
 
     if (!tokenRecord || tokenRecord.employee.deletedAt) {
@@ -224,6 +306,10 @@ export async function validateAccessToken(rawToken: string): Promise<TokenValida
         uniformShirtSize: tokenRecord.employee.uniformShirtSize,
         uniformPantsSize: tokenRecord.employee.uniformPantsSize,
         uniformShoeSize: tokenRecord.employee.uniformShoeSize,
+        educationProfile: tokenRecord.employee.educationProfile,
+        emergencyContact: tokenRecord.employee.emergencyContact,
+        healthProfile: tokenRecord.employee.healthProfile,
+        spouse: tokenRecord.employee.spouse,
         children: tokenRecord.employee.children,
       },
       tokenRecordId: tokenRecord.id,
@@ -232,6 +318,52 @@ export async function validateAccessToken(rawToken: string): Promise<TokenValida
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       return { kind: 'unavailable' };
+    }
+
+    throw error;
+  }
+}
+
+export async function finalizeOnboardingToken(
+  tokenRecordId: string,
+  employeeId: string,
+) {
+  if (!isDatabaseConfigured()) {
+    throw new Error('DATABASE_NOT_CONFIGURED');
+  }
+
+  try {
+    const finalizedAt = new Date();
+
+    return await prisma.$transaction([
+      prisma.employee.update({
+        where: {
+          id: employeeId,
+        },
+        data: {
+          completionPercent: 100,
+          status: 'cadastro_completo',
+          submittedAt: finalizedAt,
+        },
+        select: {
+          id: true,
+        },
+      }),
+      prisma.onboardingAccessToken.update({
+        where: {
+          id: tokenRecordId,
+        },
+        data: {
+          usedAt: finalizedAt,
+        },
+        select: {
+          id: true,
+        },
+      }),
+    ]);
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      throw new Error('TOKEN_FINALIZE_FAILED');
     }
 
     throw error;
