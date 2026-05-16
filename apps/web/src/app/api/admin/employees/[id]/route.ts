@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
+import { getAdminSessionFromRequest } from '@/lib/auth';
 import {
+  getEmployeeDetail,
   replaceEmployeeChildren,
   saveEmployeeOnboardingProfile,
   upsertEmployeeEducationProfile,
@@ -15,27 +18,35 @@ import {
   onboardingProfileSchema,
   onboardingSpouseSchema,
 } from '@/lib/onboarding-form';
+import { prisma } from '@/lib/prisma';
 import { buildRequestUrl } from '@/lib/request-url';
-import { validateAccessToken } from '@/lib/tokens';
 
 type RouteContext = {
   params: Promise<{
-    token: string;
+    id: string;
   }>;
 };
 
 export async function POST(request: Request, context: RouteContext) {
-  const { token } = await context.params;
-  const formData = await request.formData();
-  const tokenState = await validateAccessToken(token);
-
-  if (tokenState.kind !== 'valid') {
-    return NextResponse.redirect(buildRequestUrl(request, `/onboarding/${token}`), {
-      status: 303,
-    });
+  if (!getAdminSessionFromRequest(request)) {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 
-  const parsed = onboardingProfileSchema.safeParse({
+  const { id } = await context.params;
+  const employee = await getEmployeeDetail(id);
+
+  if (!employee) {
+    return NextResponse.json({ error: 'not_found' }, { status: 404 });
+  }
+
+  if (employee.status === 'revisado') {
+    const redirectUrl = buildRequestUrl(request, `/funcionarios/${id}`);
+    redirectUrl.searchParams.set('error', 'locked');
+    return NextResponse.redirect(redirectUrl, { status: 303 });
+  }
+
+  const formData = await request.formData();
+  const parsedProfile = onboardingProfileSchema.safeParse({
     fullName: formData.get('fullName'),
     birthDate: formData.get('birthDate'),
     phone: formData.get('phone'),
@@ -88,35 +99,45 @@ export async function POST(request: Request, context: RouteContext) {
     expectedEndDate: formData.get('expectedEndDate'),
   });
 
-  const redirectUrl = buildRequestUrl(request, `/onboarding/${token}`);
+  const redirectUrl = buildRequestUrl(request, `/funcionarios/${id}`);
 
   if (
-    !parsed.success ||
+    !parsedProfile.success ||
     !parsedChildren.success ||
     !parsedSpouse.success ||
     !parsedHealth.success ||
     !parsedEmergencyContact.success ||
     !parsedEducation.success
   ) {
-    redirectUrl.searchParams.set('error', 'profile');
+    redirectUrl.searchParams.set('error', 'validation');
     return NextResponse.redirect(redirectUrl, { status: 303 });
   }
 
-  await saveEmployeeOnboardingProfile(tokenState.employee.id, parsed.data);
-  await replaceEmployeeChildren(tokenState.employee.id, parsedChildren.data.children);
-  await upsertEmployeeSpouse(tokenState.employee.id, parsedSpouse.data);
-  await upsertEmployeeHealthProfile(tokenState.employee.id, parsedHealth.data);
-  await upsertEmployeeEmergencyContact(
-    tokenState.employee.id,
-    parsedEmergencyContact.data,
-  );
-  await upsertEmployeeEducationProfile(tokenState.employee.id, parsedEducation.data);
+  await saveEmployeeOnboardingProfile(id, parsedProfile.data);
+  await replaceEmployeeChildren(id, parsedChildren.data.children);
+  await upsertEmployeeSpouse(id, parsedSpouse.data);
+  await upsertEmployeeHealthProfile(id, parsedHealth.data);
+  await upsertEmployeeEmergencyContact(id, parsedEmergencyContact.data);
+  await upsertEmployeeEducationProfile(id, parsedEducation.data);
 
-  redirectUrl.searchParams.set('submitted', '1');
-  redirectUrl.searchParams.set('fullName', parsed.data.fullName);
-  redirectUrl.searchParams.set('shirtSize', parsed.data.shirtSize);
-  redirectUrl.searchParams.set('pantsSize', parsed.data.pantsSize);
-  redirectUrl.searchParams.set('shoeSize', parsed.data.shoeSize);
+  if (employee.status === 'cadastro_completo') {
+    try {
+      await prisma.employee.update({
+        where: {
+          id,
+        },
+        data: {
+          status: 'cadastro_completo',
+          completionPercent: 100,
+        },
+      });
+    } catch (error) {
+      if (!(error instanceof Prisma.PrismaClientKnownRequestError)) {
+        throw error;
+      }
+    }
+  }
 
+  redirectUrl.searchParams.set('updated', '1');
   return NextResponse.redirect(redirectUrl, { status: 303 });
 }

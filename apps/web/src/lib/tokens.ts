@@ -197,6 +197,67 @@ export async function createAccessToken(employeeId: string) {
   };
 }
 
+export async function reopenEmployeeOnboarding(employeeId: string) {
+  if (!isDatabaseConfigured()) {
+    throw new Error('DATABASE_NOT_CONFIGURED');
+  }
+
+  const rawToken = createRawAccessToken();
+  const tokenHash = hashAccessToken(rawToken);
+  const expiresAt = new Date();
+  const reopenedAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + getTokenTtlDays());
+
+  try {
+    await prisma.$transaction([
+      prisma.employee.update({
+        where: {
+          id: employeeId,
+        },
+        data: {
+          status: 'pendente_informacoes',
+          submittedAt: null,
+          reviewedAt: null,
+          completionPercent: 95,
+          updatedAt: reopenedAt,
+        },
+      }),
+      prisma.onboardingAccessToken.updateMany({
+        where: {
+          employeeId,
+          revokedAt: null,
+          usedAt: null,
+          expiresAt: {
+            gt: reopenedAt,
+          },
+        },
+        data: {
+          revokedAt: reopenedAt,
+        },
+      }),
+      prisma.onboardingAccessToken.create({
+        data: {
+          employeeId,
+          tokenHash,
+          expiresAt,
+        },
+      }),
+    ]);
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      throw new Error('TOKEN_REOPEN_FAILED');
+    }
+
+    throw error;
+  }
+
+  return {
+    rawToken,
+    link: buildOnboardingLink(rawToken),
+    expiresAt,
+  };
+}
+
 export async function validateAccessToken(rawToken: string): Promise<TokenValidationResult> {
   if (!isDatabaseConfigured()) {
     return { kind: 'unavailable' };

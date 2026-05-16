@@ -32,6 +32,66 @@ export type EmployeeSummary = {
   } | null;
 };
 
+export type EmployeeListFilters = {
+  search?: string;
+  status?: OnboardingStatus | 'all';
+};
+
+export type EmployeeDetail = {
+  id: string;
+  fullName: string;
+  birthDate: Date | null;
+  phone: string | null;
+  email: string | null;
+  instagram: string | null;
+  residentialAddress: string | null;
+  uniformShirtSize: string | null;
+  uniformPantsSize: string | null;
+  uniformShoeSize: string | null;
+  status: OnboardingStatus;
+  completionPercent: number;
+  submittedAt: Date | null;
+  reviewedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  latestAccessToken: {
+    expiresAt: Date;
+    usedAt: Date | null;
+    revokedAt: Date | null;
+    createdAt: Date;
+  } | null;
+  children: Array<{
+    id: string;
+    name: string;
+    gender: string | null;
+    birthDate: Date;
+  }>;
+  spouse: {
+    name: string;
+    phone: string | null;
+    weddingAnniversary: Date | null;
+  } | null;
+  healthProfile: {
+    continuousMedication: string | null;
+    allergies: string | null;
+    relevantCondition: string | null;
+    workRestriction: string | null;
+    additionalNotes: string | null;
+    consentAcceptedAt: Date | null;
+  } | null;
+  emergencyContact: {
+    name: string;
+    phone: string;
+    address: string | null;
+  } | null;
+  educationProfile: {
+    institution: string | null;
+    courseName: string | null;
+    courseSchedule: string | null;
+    expectedEndDate: Date | null;
+  } | null;
+};
+
 export type EmployeeChildInput = {
   name: string;
   gender: string;
@@ -68,18 +128,130 @@ export type EmployeeEducationInput = {
   expectedEndDate: string;
 };
 
-export async function listEmployees(): Promise<EmployeeSummary[]> {
+export type ImportantDateEvent = {
+  kind: 'employee_birthday' | 'child_birthday' | 'wedding_anniversary';
+  label: string;
+  employeeId: string;
+  employeeName: string;
+  eventDate: Date;
+  month: number;
+  day: number;
+};
+
+export type EmployeeExportRow = {
+  fullName: string;
+  email: string;
+  phone: string;
+  status: string;
+  birthDate: string;
+  instagram: string;
+  residentialAddress: string;
+  uniformShirtSize: string;
+  uniformPantsSize: string;
+  uniformShoeSize: string;
+  spouseName: string;
+  spousePhone: string;
+  weddingAnniversary: string;
+  childrenSummary: string;
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  emergencyContactAddress: string;
+  educationInstitution: string;
+  educationCourseName: string;
+  educationCourseSchedule: string;
+  educationExpectedEndDate: string;
+  createdAt: string;
+  updatedAt: string;
+  submittedAt: string;
+  reviewedAt: string;
+};
+
+export type ImportantDateExportRow = {
+  referenceMonth: string;
+  eventType: string;
+  eventLabel: string;
+  employeeName: string;
+  eventDay: string;
+  originalDate: string;
+};
+
+function formatDateOnly(value: Date | null | undefined) {
+  if (!value) {
+    return '';
+  }
+
+  return value.toLocaleDateString('pt-BR', {
+    timeZone: 'UTC',
+  });
+}
+
+function formatDateTime(value: Date | null | undefined) {
+  if (!value) {
+    return '';
+  }
+
+  return value.toLocaleString('pt-BR');
+}
+
+export function getOnboardingStatusLabel(status: OnboardingStatus) {
+  switch (status) {
+    case 'cadastro_iniciado':
+      return 'Cadastro iniciado';
+    case 'pendente_informacoes':
+      return 'Pendente de informacoes';
+    case 'cadastro_completo':
+      return 'Cadastro completo';
+    case 'revisado':
+      return 'Revisado';
+    default:
+      return status;
+  }
+}
+
+function getImportantDateTypeLabel(kind: ImportantDateEvent['kind']) {
+  switch (kind) {
+    case 'employee_birthday':
+      return 'Aniversario de funcionario';
+    case 'child_birthday':
+      return 'Aniversario de filho';
+    case 'wedding_anniversary':
+      return 'Aniversario de casamento';
+    default:
+      return kind;
+  }
+}
+
+export async function listEmployees(
+  filters: EmployeeListFilters = {},
+): Promise<EmployeeSummary[]> {
   if (!isDatabaseConfigured()) {
     return [];
   }
+
+  const trimmedSearch = filters.search?.trim();
+  const normalizedStatus =
+    filters.status && filters.status !== 'all' ? filters.status : undefined;
 
   try {
     const employees = await prisma.employee.findMany({
       where: {
         deletedAt: null,
+        ...(trimmedSearch
+          ? {
+              fullName: {
+                contains: trimmedSearch,
+                mode: 'insensitive',
+              },
+            }
+          : {}),
+        ...(normalizedStatus
+          ? {
+              status: normalizedStatus,
+            }
+          : {}),
       },
       orderBy: {
-        createdAt: 'desc',
+        updatedAt: 'desc',
       },
       select: {
         id: true,
@@ -115,6 +287,111 @@ export async function listEmployees(): Promise<EmployeeSummary[]> {
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       return [];
+    }
+
+    throw error;
+  }
+}
+
+export async function getEmployeeDetail(
+  employeeId: string,
+): Promise<EmployeeDetail | null> {
+  if (!isDatabaseConfigured()) {
+    return null;
+  }
+
+  try {
+    const employee = await prisma.employee.findFirst({
+      where: {
+        id: employeeId,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        fullName: true,
+        birthDate: true,
+        phone: true,
+        email: true,
+        instagram: true,
+        residentialAddress: true,
+        uniformShirtSize: true,
+        uniformPantsSize: true,
+        uniformShoeSize: true,
+        status: true,
+        completionPercent: true,
+        submittedAt: true,
+        reviewedAt: true,
+        createdAt: true,
+        updatedAt: true,
+        onboardingAccessTokens: {
+          orderBy: {
+            createdAt: 'desc',
+          },
+          take: 1,
+          select: {
+            expiresAt: true,
+            usedAt: true,
+            revokedAt: true,
+            createdAt: true,
+          },
+        },
+        children: {
+          orderBy: {
+            createdAt: 'asc',
+          },
+          select: {
+            id: true,
+            name: true,
+            gender: true,
+            birthDate: true,
+          },
+        },
+        spouse: {
+          select: {
+            name: true,
+            phone: true,
+            weddingAnniversary: true,
+          },
+        },
+        healthProfile: {
+          select: {
+            continuousMedication: true,
+            allergies: true,
+            relevantCondition: true,
+            workRestriction: true,
+            additionalNotes: true,
+            consentAcceptedAt: true,
+          },
+        },
+        emergencyContact: {
+          select: {
+            name: true,
+            phone: true,
+            address: true,
+          },
+        },
+        educationProfile: {
+          select: {
+            institution: true,
+            courseName: true,
+            courseSchedule: true,
+            expectedEndDate: true,
+          },
+        },
+      },
+    });
+
+    if (!employee) {
+      return null;
+    }
+
+    return {
+      ...employee,
+      latestAccessToken: employee.onboardingAccessTokens[0] ?? null,
+    };
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      return null;
     }
 
     throw error;
@@ -394,6 +671,139 @@ export async function upsertEmployeeEducationProfile(
   });
 }
 
+export async function markEmployeeAsReviewed(employeeId: string) {
+  if (!isDatabaseConfigured()) {
+    throw new Error('DATABASE_NOT_CONFIGURED');
+  }
+
+  return prisma.employee.update({
+    where: {
+      id: employeeId,
+    },
+    data: {
+      status: 'revisado',
+      completionPercent: 100,
+      reviewedAt: new Date(),
+    },
+    select: {
+      id: true,
+      status: true,
+      reviewedAt: true,
+    },
+  });
+}
+
+export async function listImportantDateEvents(referenceDate = new Date()) {
+  if (!isDatabaseConfigured()) {
+    return {
+      month: referenceDate.getMonth() + 1,
+      year: referenceDate.getFullYear(),
+      events: [] as ImportantDateEvent[],
+    };
+  }
+
+  const month = referenceDate.getMonth() + 1;
+  const year = referenceDate.getFullYear();
+
+  try {
+    const employees = await prisma.employee.findMany({
+      where: {
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        fullName: true,
+        birthDate: true,
+        spouse: {
+          select: {
+            weddingAnniversary: true,
+          },
+        },
+        children: {
+          select: {
+            id: true,
+            name: true,
+            birthDate: true,
+          },
+        },
+      },
+    });
+
+    const events = employees.flatMap((employee) => {
+      const employeeEvents: ImportantDateEvent[] = [];
+
+      if (employee.birthDate && employee.birthDate.getUTCMonth() + 1 === month) {
+        employeeEvents.push({
+          kind: 'employee_birthday',
+          label: `Aniversario de ${employee.fullName}`,
+          employeeId: employee.id,
+          employeeName: employee.fullName,
+          eventDate: employee.birthDate,
+          month,
+          day: employee.birthDate.getUTCDate(),
+        });
+      }
+
+      if (
+        employee.spouse?.weddingAnniversary &&
+        employee.spouse.weddingAnniversary.getUTCMonth() + 1 === month
+      ) {
+        employeeEvents.push({
+          kind: 'wedding_anniversary',
+          label: `Aniversario de casamento de ${employee.fullName}`,
+          employeeId: employee.id,
+          employeeName: employee.fullName,
+          eventDate: employee.spouse.weddingAnniversary,
+          month,
+          day: employee.spouse.weddingAnniversary.getUTCDate(),
+        });
+      }
+
+      for (const child of employee.children) {
+        if (child.birthDate.getUTCMonth() + 1 !== month) {
+          continue;
+        }
+
+        employeeEvents.push({
+          kind: 'child_birthday',
+          label: `Aniversario de ${child.name} (${employee.fullName})`,
+          employeeId: employee.id,
+          employeeName: employee.fullName,
+          eventDate: child.birthDate,
+          month,
+          day: child.birthDate.getUTCDate(),
+        });
+      }
+
+      return employeeEvents;
+    });
+
+    events.sort((left, right) => {
+      if (left.day !== right.day) {
+        return left.day - right.day;
+      }
+
+      return left.label.localeCompare(right.label, 'pt-BR');
+    });
+
+    return {
+      month,
+      year,
+      events,
+    };
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      return {
+        month,
+        year,
+        events: [] as ImportantDateEvent[],
+      };
+    }
+
+    throw error;
+  }
+}
+
 export async function getEmployeeMetrics() {
   const employees = await listEmployees();
 
@@ -404,6 +814,141 @@ export async function getEmployeeMetrics() {
     cadastroCompleto: employees.filter((item) => item.status === 'cadastro_completo').length,
     revisado: employees.filter((item) => item.status === 'revisado').length,
   };
+}
+
+export async function listEmployeeExportRows(): Promise<EmployeeExportRow[]> {
+  if (!isDatabaseConfigured()) {
+    return [];
+  }
+
+  try {
+    const employees = await prisma.employee.findMany({
+      where: {
+        deletedAt: null,
+      },
+      orderBy: {
+        fullName: 'asc',
+      },
+      select: {
+        fullName: true,
+        email: true,
+        phone: true,
+        status: true,
+        birthDate: true,
+        instagram: true,
+        residentialAddress: true,
+        uniformShirtSize: true,
+        uniformPantsSize: true,
+        uniformShoeSize: true,
+        createdAt: true,
+        updatedAt: true,
+        submittedAt: true,
+        reviewedAt: true,
+        spouse: {
+          select: {
+            name: true,
+            phone: true,
+            weddingAnniversary: true,
+          },
+        },
+        children: {
+          orderBy: {
+            birthDate: 'asc',
+          },
+          select: {
+            name: true,
+            gender: true,
+            birthDate: true,
+          },
+        },
+        emergencyContact: {
+          select: {
+            name: true,
+            phone: true,
+            address: true,
+          },
+        },
+        educationProfile: {
+          select: {
+            institution: true,
+            courseName: true,
+            courseSchedule: true,
+            expectedEndDate: true,
+          },
+        },
+      },
+    });
+
+    return employees.map((employee) => ({
+      fullName: employee.fullName,
+      email: employee.email ?? '',
+      phone: employee.phone ?? '',
+      status: getOnboardingStatusLabel(employee.status),
+      birthDate: formatDateOnly(employee.birthDate),
+      instagram: employee.instagram ?? '',
+      residentialAddress: employee.residentialAddress ?? '',
+      uniformShirtSize: employee.uniformShirtSize ?? '',
+      uniformPantsSize: employee.uniformPantsSize ?? '',
+      uniformShoeSize: employee.uniformShoeSize ?? '',
+      spouseName: employee.spouse?.name ?? '',
+      spousePhone: employee.spouse?.phone ?? '',
+      weddingAnniversary: formatDateOnly(employee.spouse?.weddingAnniversary),
+      childrenSummary: employee.children
+        .map((child) => {
+          const childParts = [child.name];
+
+          if (child.gender) {
+            childParts.push(child.gender);
+          }
+
+          childParts.push(formatDateOnly(child.birthDate));
+          return childParts.filter(Boolean).join(' - ');
+        })
+        .join(' | '),
+      emergencyContactName: employee.emergencyContact?.name ?? '',
+      emergencyContactPhone: employee.emergencyContact?.phone ?? '',
+      emergencyContactAddress: employee.emergencyContact?.address ?? '',
+      educationInstitution: employee.educationProfile?.institution ?? '',
+      educationCourseName: employee.educationProfile?.courseName ?? '',
+      educationCourseSchedule: employee.educationProfile?.courseSchedule ?? '',
+      educationExpectedEndDate: formatDateOnly(
+        employee.educationProfile?.expectedEndDate,
+      ),
+      createdAt: formatDateTime(employee.createdAt),
+      updatedAt: formatDateTime(employee.updatedAt),
+      submittedAt: formatDateTime(employee.submittedAt),
+      reviewedAt: formatDateTime(employee.reviewedAt),
+    }));
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      return [];
+    }
+
+    throw error;
+  }
+}
+
+export async function listImportantDateExportRows(referenceDate = new Date()) {
+  const importantDates = await listImportantDateEvents(referenceDate);
+  const referenceMonth = new Date(
+    importantDates.year,
+    importantDates.month - 1,
+    1,
+  ).toLocaleDateString('pt-BR', {
+    month: 'long',
+    year: 'numeric',
+  });
+
+  return importantDates.events.map<ImportantDateExportRow>((event) => ({
+    referenceMonth,
+    eventType: getImportantDateTypeLabel(event.kind),
+    eventLabel: event.label,
+    employeeName: event.employeeName,
+    eventDay: `${String(event.day).padStart(2, '0')}/${String(
+      importantDates.month,
+    ).padStart(2, '0')}`,
+    originalDate: formatDateOnly(event.eventDate),
+  }));
 }
 
 export async function createEmployee(input: EmployeeCreateInput) {

@@ -13,6 +13,8 @@ type EmployeesPageProps = {
     link?: string;
     expiresAt?: string;
     error?: string;
+    q?: string;
+    status?: string;
   }>;
 };
 
@@ -22,6 +24,14 @@ const statusLabels: Record<string, string> = {
   cadastro_completo: 'Cadastro completo',
   revisado: 'Revisado',
 };
+
+const statusFilterOptions = [
+  { value: 'all', label: 'Todos' },
+  { value: 'cadastro_iniciado', label: 'Cadastro iniciado' },
+  { value: 'pendente_informacoes', label: 'Pendente de informacoes' },
+  { value: 'cadastro_completo', label: 'Cadastro completo' },
+  { value: 'revisado', label: 'Revisado' },
+] as const;
 
 export default async function EmployeesPage({
   searchParams,
@@ -33,7 +43,16 @@ export default async function EmployeesPage({
   }
 
   const params = await searchParams;
-  const employees = await listEmployees();
+  const searchQuery = params?.q?.trim() ?? '';
+  const selectedStatus = statusFilterOptions.some(
+    (option) => option.value === params?.status,
+  )
+    ? (params?.status as (typeof statusFilterOptions)[number]['value'])
+    : 'all';
+  const employees = await listEmployees({
+    search: searchQuery,
+    status: selectedStatus,
+  });
   const metrics = await getEmployeeMetrics();
   const databaseReady = isDatabaseConfigured();
   const generatedEmployee = params?.employeeId
@@ -59,6 +78,9 @@ export default async function EmployeesPage({
           <Link className="button button-primary" href="/funcionarios/novo">
             Novo cadastro
           </Link>
+          <a className="button button-secondary" href="/api/admin/export/employees">
+            Exportar CSV
+          </a>
           <Link className="button button-secondary" href="/admin">
             Voltar ao painel
           </Link>
@@ -137,9 +159,46 @@ export default async function EmployeesPage({
           </p>
         </div>
 
+        <p className="table-note">
+          O arquivo CSV desta tela inclui dados administrativos e operacionais,
+          mas exclui informacoes de saude nesta fase do MVP.
+        </p>
+
+        <form className="filters-bar" method="get">
+          <label className="filters-field">
+            Buscar por nome
+            <input
+              type="search"
+              name="q"
+              defaultValue={searchQuery}
+              placeholder="Ex.: Maria Souza"
+            />
+          </label>
+
+          <label className="filters-field">
+            Filtrar por status
+            <select name="status" defaultValue={selectedStatus}>
+              {statusFilterOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <div className="filters-actions">
+            <button className="button button-primary button-small" type="submit">
+              Aplicar filtros
+            </button>
+            <Link className="button button-secondary button-small" href="/funcionarios">
+              Limpar
+            </Link>
+          </div>
+        </form>
+
         {employees.length === 0 ? (
           <p className="empty-state">
-            Nenhum funcionario cadastrado ainda.
+            Nenhum funcionario encontrado para os filtros informados.
           </p>
         ) : (
           <div className="measurements-table-wrapper">
@@ -179,11 +238,28 @@ export default async function EmployeesPage({
                     <td>{employee.createdAt.toLocaleString('pt-BR')}</td>
                     <td>{employee.updatedAt.toLocaleString('pt-BR')}</td>
                     <td>
-                      <form action={`/api/admin/employees/${employee.id}/tokens`} method="post">
-                        <button className="button button-secondary button-small" type="submit">
-                          Gerar link
-                        </button>
-                      </form>
+                      <div className="table-actions">
+                        <Link
+                          className="button button-secondary button-small"
+                          href={`/funcionarios/${employee.id}`}
+                        >
+                          Abrir cadastro
+                        </Link>
+                        {employee.status === 'cadastro_completo' ||
+                        employee.status === 'revisado' ? (
+                          <form action={`/api/admin/employees/${employee.id}/reopen`} method="post">
+                            <button className="button button-secondary button-small" type="submit">
+                              Reabrir
+                            </button>
+                          </form>
+                        ) : (
+                          <form action={`/api/admin/employees/${employee.id}/tokens`} method="post">
+                            <button className="button button-secondary button-small" type="submit">
+                              Gerar link
+                            </button>
+                          </form>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

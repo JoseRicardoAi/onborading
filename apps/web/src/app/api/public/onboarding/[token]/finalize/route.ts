@@ -3,6 +3,7 @@ import {
   getOnboardingCompletionIssues,
   onboardingFinalizeSchema,
 } from '@/lib/onboarding-form';
+import { buildRequestUrl } from '@/lib/request-url';
 import { finalizeOnboardingToken, validateAccessToken } from '@/lib/tokens';
 
 type RouteContext = {
@@ -17,7 +18,7 @@ export async function POST(request: Request, context: RouteContext) {
   const tokenState = await validateAccessToken(token);
 
   if (tokenState.kind !== 'valid') {
-    return NextResponse.redirect(new URL(`/onboarding/${token}`, request.url), {
+    return NextResponse.redirect(buildRequestUrl(request, `/onboarding/${token}`), {
       status: 303,
     });
   }
@@ -26,7 +27,7 @@ export async function POST(request: Request, context: RouteContext) {
     finalConfirmation: formData.get('finalConfirmation'),
   });
 
-  const redirectUrl = new URL(`/onboarding/${token}`, request.url);
+  const redirectUrl = buildRequestUrl(request, `/onboarding/${token}`);
 
   if (!parsedConfirmation.success) {
     redirectUrl.searchParams.set('error', 'finalize');
@@ -42,7 +43,7 @@ export async function POST(request: Request, context: RouteContext) {
 
   await finalizeOnboardingToken(tokenState.tokenRecordId, tokenState.employee.id);
 
-  const successUrl = new URL(`/onboarding/${token}/concluido`, request.url);
+  const successUrl = buildRequestUrl(request, `/onboarding/${token}/concluido`);
   successUrl.searchParams.set('fullName', tokenState.employee.fullName);
 
   return NextResponse.redirect(successUrl, { status: 303 });

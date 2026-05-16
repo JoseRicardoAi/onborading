@@ -7,6 +7,7 @@ type SpouseFieldsProps = {
   initialSpouseName: string;
   initialSpousePhone: string;
   initialWeddingAnniversary: string;
+  disabled?: boolean;
 };
 
 export function SpouseFields({
@@ -14,6 +15,7 @@ export function SpouseFields({
   initialSpouseName,
   initialSpousePhone,
   initialWeddingAnniversary,
+  disabled = false,
 }: SpouseFieldsProps) {
   const [hasSpouse, setHasSpouse] = useState(initialHasSpouse);
 
@@ -35,6 +37,7 @@ export function SpouseFields({
             value="no"
             checked={!hasSpouse}
             onChange={() => setHasSpouse(false)}
+            disabled={disabled}
           />
           Nao
         </label>
@@ -45,6 +48,7 @@ export function SpouseFields({
             value="yes"
             checked={hasSpouse}
             onChange={() => setHasSpouse(true)}
+            disabled={disabled}
           />
           Sim
         </label>
@@ -59,6 +63,7 @@ export function SpouseFields({
               name="spouseName"
               defaultValue={initialSpouseName}
               required={hasSpouse}
+              disabled={disabled}
             />
           </label>
 
@@ -70,6 +75,7 @@ export function SpouseFields({
                 name="spousePhone"
                 defaultValue={initialSpousePhone}
                 required={hasSpouse}
+                disabled={disabled}
               />
             </label>
 
@@ -80,6 +86,7 @@ export function SpouseFields({
                 name="weddingAnniversary"
                 defaultValue={initialWeddingAnniversary}
                 required={hasSpouse}
+                disabled={disabled}
               />
             </label>
           </div>

@@ -5,6 +5,7 @@ type HealthFieldsProps = {
   initialWorkRestriction: string;
   initialAdditionalNotes: string;
   hasStoredConsent: boolean;
+  disabled?: boolean;
 };
 
 export function HealthFields({
@@ -14,6 +15,7 @@ export function HealthFields({
   initialWorkRestriction,
   initialAdditionalNotes,
   hasStoredConsent,
+  disabled = false,
 }: HealthFieldsProps) {
   return (
     <div className="form-group">
@@ -38,12 +40,18 @@ export function HealthFields({
           name="continuousMedication"
           defaultValue={initialContinuousMedication}
           rows={3}
+          disabled={disabled}
         />
       </label>
 
       <label>
         Alergias
-        <textarea name="allergies" defaultValue={initialAllergies} rows={3} />
+        <textarea
+          name="allergies"
+          defaultValue={initialAllergies}
+          rows={3}
+          disabled={disabled}
+        />
       </label>
 
       <label>
@@ -52,6 +60,7 @@ export function HealthFields({
           name="relevantCondition"
           defaultValue={initialRelevantCondition}
           rows={3}
+          disabled={disabled}
         />
       </label>
 
@@ -61,6 +70,7 @@ export function HealthFields({
           name="workRestriction"
           defaultValue={initialWorkRestriction}
           rows={3}
+          disabled={disabled}
         />
       </label>
 
@@ -70,6 +80,7 @@ export function HealthFields({
           name="additionalNotes"
           defaultValue={initialAdditionalNotes}
           rows={3}
+          disabled={disabled}
         />
       </label>
 
@@ -79,6 +90,7 @@ export function HealthFields({
           name="healthConsent"
           value="accepted"
           defaultChecked={hasStoredConsent}
+          disabled={disabled}
         />
         Autorizo o armazenamento e o uso dessas informacoes de saude para fins
         de onboarding, cuidado e emergencia.

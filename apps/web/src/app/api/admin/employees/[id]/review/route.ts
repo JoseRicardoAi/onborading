@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminSessionFromRequest } from '@/lib/auth';
+import { getEmployeeDetail, markEmployeeAsReviewed } from '@/lib/employees';
 import { buildRequestUrl } from '@/lib/request-url';
-import { createAccessToken } from '@/lib/tokens';
 
 type RouteContext = {
   params: Promise<{
@@ -15,22 +15,29 @@ export async function POST(request: Request, context: RouteContext) {
   }
 
   const { id } = await context.params;
+  const employee = await getEmployeeDetail(id);
+
+  if (!employee) {
+    return NextResponse.json({ error: 'not_found' }, { status: 404 });
+  }
+
+  const redirectUrl = buildRequestUrl(request, `/funcionarios/${id}`);
+
+  if (employee.status !== 'cadastro_completo') {
+    redirectUrl.searchParams.set('error', 'review-status');
+    return NextResponse.redirect(redirectUrl, { status: 303 });
+  }
 
   try {
-    const { link, expiresAt } = await createAccessToken(id);
-    const redirectUrl = buildRequestUrl(request, '/funcionarios');
-    redirectUrl.searchParams.set('generated', '1');
-    redirectUrl.searchParams.set('employeeId', id);
-    redirectUrl.searchParams.set('link', link);
-    redirectUrl.searchParams.set('expiresAt', expiresAt.toISOString());
+    await markEmployeeAsReviewed(id);
+    redirectUrl.searchParams.set('reviewed', '1');
     return NextResponse.redirect(redirectUrl, { status: 303 });
   } catch (error) {
-    const redirectUrl = buildRequestUrl(request, '/funcionarios');
     redirectUrl.searchParams.set(
       'error',
       error instanceof Error && error.message === 'DATABASE_NOT_CONFIGURED'
         ? 'database'
-        : 'token',
+        : 'review',
     );
     return NextResponse.redirect(redirectUrl, { status: 303 });
   }

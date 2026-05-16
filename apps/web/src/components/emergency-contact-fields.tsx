@@ -2,12 +2,14 @@ type EmergencyContactFieldsProps = {
   initialName: string;
   initialPhone: string;
   initialAddress: string;
+  disabled?: boolean;
 };
 
 export function EmergencyContactFields({
   initialName,
   initialPhone,
   initialAddress,
+  disabled = false,
 }: EmergencyContactFieldsProps) {
   return (
     <div className="form-group">
@@ -25,6 +27,7 @@ export function EmergencyContactFields({
           name="emergencyContactName"
           defaultValue={initialName}
           required
+          disabled={disabled}
         />
       </label>
 
@@ -35,6 +38,7 @@ export function EmergencyContactFields({
           name="emergencyContactPhone"
           defaultValue={initialPhone}
           required
+          disabled={disabled}
         />
       </label>
 
@@ -45,6 +49,7 @@ export function EmergencyContactFields({
           defaultValue={initialAddress}
           rows={3}
           required
+          disabled={disabled}
         />
       </label>
     </div>

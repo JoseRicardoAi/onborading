@@ -11,6 +11,7 @@ type ChildDraft = {
 type ChildrenFieldsProps = {
   initialHasChildren: boolean;
   initialChildren: ChildDraft[];
+  disabled?: boolean;
 };
 
 function createEmptyChild(): ChildDraft {
@@ -24,6 +25,7 @@ function createEmptyChild(): ChildDraft {
 export function ChildrenFields({
   initialHasChildren,
   initialChildren,
+  disabled = false,
 }: ChildrenFieldsProps) {
   const [hasChildren, setHasChildren] = useState(initialHasChildren);
   const [children, setChildren] = useState<ChildDraft[]>(
@@ -66,6 +68,7 @@ export function ChildrenFields({
             value="no"
             checked={!hasChildren}
             onChange={() => setHasChildren(false)}
+            disabled={disabled}
           />
           Nao
         </label>
@@ -76,6 +79,7 @@ export function ChildrenFields({
             value="yes"
             checked={hasChildren}
             onChange={() => setHasChildren(true)}
+            disabled={disabled}
           />
           Sim
         </label>
@@ -91,6 +95,7 @@ export function ChildrenFields({
                   className="button button-secondary button-small"
                   type="button"
                   onClick={() => removeChild(index)}
+                  disabled={disabled}
                 >
                   Remover
                 </button>
@@ -104,6 +109,7 @@ export function ChildrenFields({
                   value={child.name}
                   onChange={(event) => updateChild(index, { name: event.currentTarget.value })}
                   required={hasChildren}
+                  disabled={disabled}
                 />
               </label>
 
@@ -117,6 +123,7 @@ export function ChildrenFields({
                       updateChild(index, { gender: event.currentTarget.value })
                     }
                     required={hasChildren}
+                    disabled={disabled}
                   >
                     <option value="" disabled>
                       Selecione
@@ -137,13 +144,19 @@ export function ChildrenFields({
                       updateChild(index, { birthDate: event.currentTarget.value })
                     }
                     required={hasChildren}
+                    disabled={disabled}
                   />
                 </label>
               </div>
             </div>
           ))}
 
-          <button className="button button-secondary" type="button" onClick={addChild}>
+          <button
+            className="button button-secondary"
+            type="button"
+            onClick={addChild}
+            disabled={disabled}
+          >
             Adicionar filho
           </button>
         </div>

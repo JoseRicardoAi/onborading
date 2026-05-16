@@ -323,6 +323,42 @@ h1 {
   gap: 18px;
 }
 
+.filters-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(220px, 280px) auto;
+  gap: 16px;
+  align-items: end;
+}
+
+.filters-field {
+  display: grid;
+  gap: 8px;
+  color: var(--secondary);
+  font-weight: 700;
+}
+
+.filters-field input,
+.filters-field select {
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: var(--secondary);
+  background: white;
+}
+
+.filters-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .onboarding-section {
   display: grid;
   gap: 20px;
@@ -646,7 +682,8 @@ h1 {
   .hero-panel,
   .onboarding-hero,
   .onboarding-grid,
-  .form-columns {
+  .form-columns,
+  .filters-bar {
     grid-template-columns: 1fr;
   }
 

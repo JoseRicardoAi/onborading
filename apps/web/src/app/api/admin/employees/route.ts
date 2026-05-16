@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { employeeCreateSchema, listEmployees, createEmployee } from '@/lib/employees';
 import { getAdminSessionFromRequest } from '@/lib/auth';
+import { buildRequestUrl } from '@/lib/request-url';
 
 export async function GET(request: Request) {
   if (!getAdminSessionFromRequest(request)) {
@@ -23,18 +24,18 @@ export async function POST(request: Request) {
   });
 
   if (!parsed.success) {
-    const redirectUrl = new URL('/funcionarios/novo', request.url);
+    const redirectUrl = buildRequestUrl(request, '/funcionarios/novo');
     redirectUrl.searchParams.set('error', 'validation');
     return NextResponse.redirect(redirectUrl, { status: 303 });
   }
 
   try {
     await createEmployee(parsed.data);
-    const redirectUrl = new URL('/funcionarios', request.url);
+    const redirectUrl = buildRequestUrl(request, '/funcionarios');
     redirectUrl.searchParams.set('created', '1');
     return NextResponse.redirect(redirectUrl, { status: 303 });
   } catch (error) {
-    const redirectUrl = new URL('/funcionarios/novo', request.url);
+    const redirectUrl = buildRequestUrl(request, '/funcionarios/novo');
     redirectUrl.searchParams.set(
       'error',
       error instanceof Error && error.message === 'DATABASE_NOT_CONFIGURED'

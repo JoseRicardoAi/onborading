@@ -8,6 +8,7 @@ type EducationFieldsProps = {
   initialCourseName: string;
   initialCourseSchedule: string;
   initialExpectedEndDate: string;
+  disabled?: boolean;
 };
 
 export function EducationFields({
@@ -16,6 +17,7 @@ export function EducationFields({
   initialCourseName,
   initialCourseSchedule,
   initialExpectedEndDate,
+  disabled = false,
 }: EducationFieldsProps) {
   const [hasEducation, setHasEducation] = useState(initialHasEducation);
 
@@ -37,6 +39,7 @@ export function EducationFields({
             value="no"
             checked={!hasEducation}
             onChange={() => setHasEducation(false)}
+            disabled={disabled}
           />
           Nao
         </label>
@@ -47,6 +50,7 @@ export function EducationFields({
             value="yes"
             checked={hasEducation}
             onChange={() => setHasEducation(true)}
+            disabled={disabled}
           />
           Sim
         </label>
@@ -61,6 +65,7 @@ export function EducationFields({
               name="institution"
               defaultValue={initialInstitution}
               required={hasEducation}
+              disabled={disabled}
             />
           </label>
 
@@ -71,6 +76,7 @@ export function EducationFields({
               name="courseName"
               defaultValue={initialCourseName}
               required={hasEducation}
+              disabled={disabled}
             />
           </label>
 
@@ -83,6 +89,7 @@ export function EducationFields({
                 defaultValue={initialCourseSchedule}
                 placeholder="Noite, sabados, EAD..."
                 required={hasEducation}
+                disabled={disabled}
               />
             </label>
 
@@ -93,6 +100,7 @@ export function EducationFields({
                 name="expectedEndDate"
                 defaultValue={initialExpectedEndDate}
                 required={hasEducation}
+                disabled={disabled}
               />
             </label>
           </div>

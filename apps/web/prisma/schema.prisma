@@ -7,6 +7,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ReminderEventType {
+  employee_birthday
+  child_birthday
+  wedding_anniversary
+}
+
+enum ReminderStatus {
+  pending
+  sent
+  failed
+  skipped
+}
+
 enum OnboardingStatus {
   cadastro_iniciado
   pendente_informacoes
@@ -38,6 +51,7 @@ model Employee {
   healthProfile        HealthProfile?
   spouse               Spouse?
   onboardingAccessTokens OnboardingAccessToken[]
+  reminderEvents       ReminderEvent[]
 
   @@index([status], map: "idx_employees_status")
   @@index([fullName], map: "idx_employees_full_name")
@@ -141,4 +155,39 @@ model AdminUser {
   tokensCreated OnboardingAccessToken[]
 
   @@map("admin_users")
+}
+
+model ReminderSetting {
+  id                          String   @id @default(uuid()) @db.Uuid
+  name                        String   @unique @default("default")
+  enabled                     Boolean  @default(true)
+  daysBefore                  Int[]    @default([7, 0]) @map("days_before")
+  recipientEmails             String[] @default([]) @map("recipient_emails")
+  includeEmployeeBirthdays    Boolean  @default(true) @map("include_employee_birthdays")
+  includeChildBirthdays       Boolean  @default(true) @map("include_child_birthdays")
+  includeWeddingAnniversaries Boolean  @default(true) @map("include_wedding_anniversaries")
+  createdAt                   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  reminderEvents              ReminderEvent[]
+
+  @@map("reminder_settings")
+}
+
+model ReminderEvent {
+  id              String            @id @default(uuid()) @db.Uuid
+  employeeId      String            @map("employee_id") @db.Uuid
+  settingId       String?           @map("setting_id") @db.Uuid
+  eventType       ReminderEventType @map("event_type")
+  eventDate       DateTime          @map("event_date") @db.Date
+  relatedName     String?           @map("related_name")
+  recipientEmails String[]          @default([]) @map("recipient_emails")
+  status          ReminderStatus    @default(pending)
+  sentAt          DateTime?         @map("sent_at") @db.Timestamptz(6)
+  errorMessage    String?           @map("error_message")
+  createdAt       DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  employee        Employee          @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  setting         ReminderSetting?  @relation(fields: [settingId], references: [id], onDelete: SetNull)
+
+  @@index([eventDate, status], map: "idx_reminder_events_date_status")
+  @@map("reminder_events")
 }
