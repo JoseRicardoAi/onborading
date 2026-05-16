@@ -1,12 +1,7 @@
 'use client';
 
-import { useActionState, useEffect } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  initialLoginActionState,
-  loginAction,
-  type LoginActionState,
-} from '@/app/login/actions';
 
 type LoginFormProps = {
   loggedOut: boolean;
@@ -14,25 +9,42 @@ type LoginFormProps = {
 
 export function LoginForm({ loggedOut }: LoginFormProps) {
   const router = useRouter();
-  const [state, formAction] = useActionState<LoginActionState, globalThis.FormData>(
-    loginAction,
-    initialLoginActionState,
-  );
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (!state.success) {
-      return;
+  async function handleSubmit(event: FormEvent<globalThis.HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      const response = await globalThis.fetch('/api/auth/login', {
+        method: 'POST',
+        body: new globalThis.FormData(event.currentTarget),
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        setError(payload?.error ?? 'Nao foi possivel entrar agora. Tente novamente.');
+        return;
+      }
+
+      router.replace('/admin');
+      router.refresh();
+    } catch {
+      setError('Nao foi possivel conectar ao servidor. Tente novamente.');
+    } finally {
+      setIsSubmitting(false);
     }
-
-    router.replace('/admin');
-    router.refresh();
-  }, [router, state.success]);
+  }
 
   return (
     <>
-      {state.error ? (
+      {error ? (
         <p className="form-message form-message-error" role="alert">
-          {state.error}
+          {error}
         </p>
       ) : null}
 
@@ -42,10 +54,16 @@ export function LoginForm({ loggedOut }: LoginFormProps) {
         </p>
       ) : null}
 
-      <form className="login-form" action={formAction}>
+      <form className="login-form" onSubmit={handleSubmit}>
         <label>
           E-mail
-          <input type="email" name="email" autoComplete="email" required />
+          <input
+            type="email"
+            name="email"
+            autoComplete="email"
+            disabled={isSubmitting}
+            required
+          />
         </label>
 
         <label>
@@ -54,11 +72,14 @@ export function LoginForm({ loggedOut }: LoginFormProps) {
             type="password"
             name="password"
             autoComplete="current-password"
+            disabled={isSubmitting}
             required
           />
         </label>
 
-        <button type="submit">Entrar</button>
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Entrando...' : 'Entrar'}
+        </button>
       </form>
     </>
   );
