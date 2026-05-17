@@ -378,11 +378,32 @@ export default async function EmployeeDetailPage({
           <dl className="token-card">
             <div>
               <dt>Status</dt>
-              <dd>{statusLabels[employee.status]}</dd>
+              <dd>
+                <span className={`status-badge status-${employee.status}`}>
+                  {statusLabels[employee.status]}
+                </span>
+              </dd>
             </div>
             <div>
               <dt>Completude</dt>
-              <dd>{employee.completionPercent}%</dd>
+              <dd>
+                <div className="progress-meter">
+                  <span>{employee.completionPercent}%</span>
+                  <div
+                    className="progress-track"
+                    role="progressbar"
+                    aria-label="Completude do cadastro"
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={employee.completionPercent}
+                  >
+                    <div
+                      className="progress-fill"
+                      style={{ width: `${employee.completionPercent}%` }}
+                    />
+                  </div>
+                </div>
+              </dd>
             </div>
             <div>
               <dt>Criado em</dt>

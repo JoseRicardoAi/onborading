@@ -219,7 +219,11 @@ export default async function EmployeesPage({
                   <tr key={employee.id}>
                     <td>{employee.fullName}</td>
                     <td>{employee.email ?? 'Nao informado'}</td>
-                    <td>{statusLabels[employee.status]}</td>
+                    <td>
+                      <span className={`status-badge status-${employee.status}`}>
+                        {statusLabels[employee.status]}
+                      </span>
+                    </td>
                     <td>
                       {employee.latestAccessToken ? (
                         employee.latestAccessToken.usedAt ? (

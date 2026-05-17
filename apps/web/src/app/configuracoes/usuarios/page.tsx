@@ -154,7 +154,15 @@ export default async function AdminUsersPage({
                     <tr key={user.id}>
                       <td>{user.fullName ?? 'Nao informado'}</td>
                       <td>{user.email}</td>
-                      <td>{user.isActive ? 'Ativo' : 'Inativo'}</td>
+                      <td>
+                        <span
+                          className={`status-badge ${
+                            user.isActive ? 'status-active' : 'status-inactive'
+                          }`}
+                        >
+                          {user.isActive ? 'Ativo' : 'Inativo'}
+                        </span>
+                      </td>
                       <td>
                         {user.lastLoginAt
                           ? user.lastLoginAt.toLocaleString('pt-BR')

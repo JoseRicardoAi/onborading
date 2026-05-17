@@ -187,7 +187,9 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                 {importantDates.events.map((event) => (
                   <tr key={`${event.kind}-${event.employeeId}-${event.label}-${event.day}`}>
                     <td>{String(event.day).padStart(2, '0')}/{String(importantDates.month).padStart(2, '0')}</td>
-                    <td>{eventLabels[event.kind]}</td>
+                    <td>
+                      <span className="status-badge">{eventLabels[event.kind]}</span>
+                    </td>
                     <td>{event.label}</td>
                     <td>{event.employeeName}</td>
                   </tr>

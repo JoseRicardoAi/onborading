@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 type ChildDraft = {
+  id?: string;
   name: string;
   gender: string;
   birthDate: string;
@@ -14,12 +15,20 @@ type ChildrenFieldsProps = {
   disabled?: boolean;
 };
 
-function createEmptyChild(): ChildDraft {
+function createEmptyChild(id = `new-${Date.now()}-${Math.random()}`): ChildDraft {
   return {
+    id,
     name: '',
     gender: '',
     birthDate: '',
   };
+}
+
+function normalizeInitialChildren(children: ChildDraft[]) {
+  return children.map((child, index) => ({
+    ...child,
+    id: child.id || `initial-${index}`,
+  }));
 }
 
 export function ChildrenFields({
@@ -29,7 +38,9 @@ export function ChildrenFields({
 }: ChildrenFieldsProps) {
   const [hasChildren, setHasChildren] = useState(initialHasChildren);
   const [children, setChildren] = useState<ChildDraft[]>(
-    initialChildren.length > 0 ? initialChildren : [createEmptyChild()],
+    initialChildren.length > 0
+      ? normalizeInitialChildren(initialChildren)
+      : [createEmptyChild('initial-empty')],
   );
 
   function updateChild(index: number, patch: Partial<ChildDraft>) {
@@ -88,7 +99,7 @@ export function ChildrenFields({
       {hasChildren ? (
         <div className="children-stack">
           {children.map((child, index) => (
-            <div className="child-card" key={`${index}-${child.name}`}>
+            <div className="child-card" key={child.id}>
               <div className="child-card-header">
                 <strong>Filho {index + 1}</strong>
                 <button
