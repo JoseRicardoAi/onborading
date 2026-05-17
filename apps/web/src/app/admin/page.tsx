@@ -95,6 +95,9 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           <a className="button button-secondary" href="/configuracoes/lembretes">
             Configurar lembretes
           </a>
+          <a className="button button-secondary" href="/configuracoes/usuarios">
+            Usuarios do RH
+          </a>
           <a className="button button-secondary" href="/api/admin/export/employees">
             Exportar funcionarios
           </a>
@@ -115,7 +118,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         <dl className="session-list">
           <div>
             <dt>Usuario</dt>
-            <dd>{session.email}</dd>
+            <dd>{session.fullName ? `${session.fullName} (${session.email})` : session.email}</dd>
           </div>
           <div>
             <dt>Expira em</dt>

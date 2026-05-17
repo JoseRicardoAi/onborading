@@ -149,7 +149,9 @@ model AdminUser {
   id          String                 @id @default(uuid()) @db.Uuid
   email       String                 @unique
   fullName    String?                @map("full_name")
+  passwordHash String?               @map("password_hash")
   isActive    Boolean                @default(true) @map("is_active")
+  lastLoginAt DateTime?              @map("last_login_at") @db.Timestamptz(6)
   createdAt   DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
   tokensCreated OnboardingAccessToken[]

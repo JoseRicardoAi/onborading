@@ -7,6 +7,9 @@ const sessionDurationMs = 1000 * 60 * 60 * 8;
 
 type AdminSessionPayload = {
   email: string;
+  adminUserId?: string;
+  fullName?: string | null;
+  source?: 'database' | 'environment';
   expiresAt: number;
 };
 
@@ -80,9 +83,19 @@ export function shouldUseSecureAuthCookie() {
   return process.env.NODE_ENV === 'production';
 }
 
-export function createAdminSessionCookie(email: string) {
+export function createAdminSessionCookie(
+  email: string,
+  options: {
+    adminUserId?: string;
+    fullName?: string | null;
+    source?: 'database' | 'environment';
+  } = {},
+) {
   const payload: AdminSessionPayload = {
     email: email.trim().toLowerCase(),
+    adminUserId: options.adminUserId,
+    fullName: options.fullName,
+    source: options.source ?? 'environment',
     expiresAt: Date.now() + sessionDurationMs,
   };
   const encodedPayload = base64UrlEncode(JSON.stringify(payload));
