@@ -175,6 +175,37 @@ export type ImportantDateExportRow = {
   originalDate: string;
 };
 
+export type DashboardActionItem = {
+  id: string;
+  fullName: string;
+  email: string | null;
+  status: OnboardingStatus;
+  completionPercent: number;
+  reason: string;
+  actionLabel: string;
+  tone: 'urgent' | 'attention' | 'ready' | 'neutral';
+  href: string;
+  tokenState: 'active' | 'expired' | 'revoked' | 'used' | 'missing';
+  updatedAt: Date;
+};
+
+export type OnboardingDashboardInsights = {
+  averageProgress: number;
+  waitingReview: number;
+  links: {
+    active: number;
+    expired: number;
+    missing: number;
+    revoked: number;
+  };
+  funnel: Array<{
+    status: OnboardingStatus;
+    label: string;
+    value: number;
+  }>;
+  actionItems: DashboardActionItem[];
+};
+
 function formatDateOnly(value: Date | null | undefined) {
   if (!value) {
     return '';
@@ -814,6 +845,281 @@ export async function getEmployeeMetrics() {
     cadastroCompleto: employees.filter((item) => item.status === 'cadastro_completo').length,
     revisado: employees.filter((item) => item.status === 'revisado').length,
   };
+}
+
+function getTokenState(
+  token: DashboardActionItemSource['onboardingAccessTokens'][number] | null,
+  referenceDate: Date,
+): DashboardActionItem['tokenState'] {
+  if (!token) {
+    return 'missing';
+  }
+
+  if (token.usedAt) {
+    return 'used';
+  }
+
+  if (token.revokedAt) {
+    return 'revoked';
+  }
+
+  if (token.expiresAt.getTime() <= referenceDate.getTime()) {
+    return 'expired';
+  }
+
+  return 'active';
+}
+
+type DashboardActionItemSource = {
+  id: string;
+  fullName: string;
+  email: string | null;
+  status: OnboardingStatus;
+  completionPercent: number;
+  updatedAt: Date;
+  onboardingAccessTokens: Array<{
+    expiresAt: Date;
+    usedAt: Date | null;
+    revokedAt: Date | null;
+    createdAt: Date;
+  }>;
+};
+
+function createDashboardActionItem(
+  employee: DashboardActionItemSource,
+  referenceDate: Date,
+): DashboardActionItem | null {
+  const latestToken = employee.onboardingAccessTokens[0] ?? null;
+  const tokenState = getTokenState(latestToken, referenceDate);
+
+  if (employee.status === 'cadastro_completo') {
+    return {
+      id: employee.id,
+      fullName: employee.fullName,
+      email: employee.email,
+      status: employee.status,
+      completionPercent: employee.completionPercent,
+      reason: 'Cadastro completo aguardando conferencia do RH.',
+      actionLabel: 'Revisar',
+      tone: 'ready',
+      href: `/funcionarios/${employee.id}`,
+      tokenState,
+      updatedAt: employee.updatedAt,
+    };
+  }
+
+  if (employee.status === 'revisado') {
+    return null;
+  }
+
+  if (tokenState === 'expired') {
+    return {
+      id: employee.id,
+      fullName: employee.fullName,
+      email: employee.email,
+      status: employee.status,
+      completionPercent: employee.completionPercent,
+      reason: 'Link expirado antes da conclusao do cadastro.',
+      actionLabel: 'Reenviar link',
+      tone: 'urgent',
+      href: `/funcionarios/${employee.id}`,
+      tokenState,
+      updatedAt: employee.updatedAt,
+    };
+  }
+
+  if (tokenState === 'missing' || tokenState === 'revoked') {
+    return {
+      id: employee.id,
+      fullName: employee.fullName,
+      email: employee.email,
+      status: employee.status,
+      completionPercent: employee.completionPercent,
+      reason:
+        tokenState === 'missing'
+          ? 'Cadastro ainda sem link ativo para o colaborador.'
+          : 'Ultimo link foi revogado e precisa ser substituido.',
+      actionLabel: 'Gerar link',
+      tone: 'attention',
+      href: `/funcionarios/${employee.id}`,
+      tokenState,
+      updatedAt: employee.updatedAt,
+    };
+  }
+
+  if (employee.status === 'pendente_informacoes') {
+    return {
+      id: employee.id,
+      fullName: employee.fullName,
+      email: employee.email,
+      status: employee.status,
+      completionPercent: employee.completionPercent,
+      reason: 'Formulario em andamento; acompanhe se o progresso estagnar.',
+      actionLabel: 'Acompanhar',
+      tone: 'neutral',
+      href: `/funcionarios/${employee.id}`,
+      tokenState,
+      updatedAt: employee.updatedAt,
+    };
+  }
+
+  return null;
+}
+
+function sortDashboardActions(
+  left: DashboardActionItem,
+  right: DashboardActionItem,
+) {
+  const priority = {
+    urgent: 0,
+    ready: 1,
+    attention: 2,
+    neutral: 3,
+  } satisfies Record<DashboardActionItem['tone'], number>;
+
+  if (priority[left.tone] !== priority[right.tone]) {
+    return priority[left.tone] - priority[right.tone];
+  }
+
+  return right.updatedAt.getTime() - left.updatedAt.getTime();
+}
+
+export async function getOnboardingDashboardInsights(): Promise<OnboardingDashboardInsights> {
+  const emptyFunnel = [
+    'cadastro_iniciado',
+    'pendente_informacoes',
+    'cadastro_completo',
+    'revisado',
+  ].map((status) => ({
+    status: status as OnboardingStatus,
+    label: getOnboardingStatusLabel(status as OnboardingStatus),
+    value: 0,
+  }));
+
+  if (!isDatabaseConfigured()) {
+    return {
+      averageProgress: 0,
+      waitingReview: 0,
+      links: {
+        active: 0,
+        expired: 0,
+        missing: 0,
+        revoked: 0,
+      },
+      funnel: emptyFunnel,
+      actionItems: [],
+    };
+  }
+
+  try {
+    const referenceDate = new Date();
+    const employees = await prisma.employee.findMany({
+      where: {
+        deletedAt: null,
+      },
+      orderBy: {
+        updatedAt: 'desc',
+      },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        status: true,
+        completionPercent: true,
+        updatedAt: true,
+        onboardingAccessTokens: {
+          orderBy: {
+            createdAt: 'desc',
+          },
+          take: 1,
+          select: {
+            expiresAt: true,
+            usedAt: true,
+            revokedAt: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
+
+    const links = employees.reduce(
+      (acc, employee) => {
+        const tokenState = getTokenState(
+          employee.onboardingAccessTokens[0] ?? null,
+          referenceDate,
+        );
+
+        if (tokenState === 'active') {
+          acc.active += 1;
+        }
+
+        if (tokenState === 'expired') {
+          acc.expired += 1;
+        }
+
+        if (tokenState === 'missing') {
+          acc.missing += 1;
+        }
+
+        if (tokenState === 'revoked') {
+          acc.revoked += 1;
+        }
+
+        return acc;
+      },
+      {
+        active: 0,
+        expired: 0,
+        missing: 0,
+        revoked: 0,
+      },
+    );
+
+    const funnel = emptyFunnel.map((item) => ({
+      ...item,
+      value: employees.filter((employee) => employee.status === item.status).length,
+    }));
+    const actionItems = employees
+      .map((employee) => createDashboardActionItem(employee, referenceDate))
+      .filter((item): item is DashboardActionItem => Boolean(item))
+      .sort(sortDashboardActions)
+      .slice(0, 7);
+
+    return {
+      averageProgress:
+        employees.length > 0
+          ? Math.round(
+              employees.reduce(
+                (sum, employee) => sum + employee.completionPercent,
+                0,
+              ) / employees.length,
+            )
+          : 0,
+      waitingReview: employees.filter(
+        (employee) => employee.status === 'cadastro_completo',
+      ).length,
+      links,
+      funnel,
+      actionItems,
+    };
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      return {
+        averageProgress: 0,
+        waitingReview: 0,
+        links: {
+          active: 0,
+          expired: 0,
+          missing: 0,
+          revoked: 0,
+        },
+        funnel: emptyFunnel,
+        actionItems: [],
+      };
+    }
+
+    throw error;
+  }
 }
 
 export async function listEmployeeExportRows(): Promise<EmployeeExportRow[]> {
