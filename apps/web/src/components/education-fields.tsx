@@ -22,42 +22,47 @@ export function EducationFields({
   const [hasEducation, setHasEducation] = useState(initialHasEducation);
 
   return (
-    <div className="form-group">
+    <div className="form-group dynamic-section">
       <div className="section-header compact-header">
         <div>
           <p className="eyebrow">Vida academica</p>
-          <h3>Estudos e horarios</h3>
+          <h3>Curso, horario e previsao</h3>
         </div>
+        <p className="section-copy">
+          Use este bloco quando houver curso tecnico, faculdade ou rotina academica ativa.
+        </p>
       </div>
 
       <fieldset className="choice-group">
         <legend>Voce cursa tecnico ou faculdade?</legend>
-        <label className="choice-option">
-          <input
-            type="radio"
-            name="hasEducation"
-            value="no"
-            checked={!hasEducation}
-            onChange={() => setHasEducation(false)}
-            disabled={disabled}
-          />
-          Nao
-        </label>
-        <label className="choice-option">
-          <input
-            type="radio"
-            name="hasEducation"
-            value="yes"
-            checked={hasEducation}
-            onChange={() => setHasEducation(true)}
-            disabled={disabled}
-          />
-          Sim
-        </label>
+        <div className="choice-options">
+          <label className="choice-option">
+            <input
+              type="radio"
+              name="hasEducation"
+              value="no"
+              checked={!hasEducation}
+              onChange={() => setHasEducation(false)}
+              disabled={disabled}
+            />
+            Nao
+          </label>
+          <label className="choice-option">
+            <input
+              type="radio"
+              name="hasEducation"
+              value="yes"
+              checked={hasEducation}
+              onChange={() => setHasEducation(true)}
+              disabled={disabled}
+            />
+            Sim
+          </label>
+        </div>
       </fieldset>
 
       {hasEducation ? (
-        <div className="child-card">
+        <div className="dynamic-card">
           <label>
             Instituicao
             <input

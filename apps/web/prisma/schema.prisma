@@ -154,9 +154,26 @@ model AdminUser {
   lastLoginAt DateTime?              @map("last_login_at") @db.Timestamptz(6)
   createdAt   DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt   DateTime?              @map("deleted_at") @db.Timestamptz(6)
   tokensCreated OnboardingAccessToken[]
 
+  @@index([deletedAt], map: "idx_admin_users_deleted_at")
   @@map("admin_users")
+}
+
+model AdminAuditLog {
+  id               String   @id @default(uuid()) @db.Uuid
+  actorAdminUserId String?  @map("actor_admin_user_id") @db.Uuid
+  actorEmail       String?  @map("actor_email")
+  action           String
+  entityType       String   @map("entity_type")
+  entityId         String?  @map("entity_id")
+  metadata         Json?
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([entityType, entityId], map: "idx_admin_audit_logs_entity")
+  @@index([createdAt], map: "idx_admin_audit_logs_created_at")
+  @@map("admin_audit_logs")
 }
 
 model ReminderSetting {

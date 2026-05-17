@@ -20,42 +20,47 @@ export function SpouseFields({
   const [hasSpouse, setHasSpouse] = useState(initialHasSpouse);
 
   return (
-    <div className="form-group">
+    <div className="form-group dynamic-section">
       <div className="section-header compact-header">
         <div>
           <p className="eyebrow">Conjuge</p>
-          <h3>Dados condicionais</h3>
+          <h3>Contato familiar opcional</h3>
         </div>
+        <p className="section-copy">
+          Preencha este bloco apenas quando houver conjuge ou uniao estavel.
+        </p>
       </div>
 
       <fieldset className="choice-group">
         <legend>Voce e casado ou amasiado?</legend>
-        <label className="choice-option">
-          <input
-            type="radio"
-            name="hasSpouse"
-            value="no"
-            checked={!hasSpouse}
-            onChange={() => setHasSpouse(false)}
-            disabled={disabled}
-          />
-          Nao
-        </label>
-        <label className="choice-option">
-          <input
-            type="radio"
-            name="hasSpouse"
-            value="yes"
-            checked={hasSpouse}
-            onChange={() => setHasSpouse(true)}
-            disabled={disabled}
-          />
-          Sim
-        </label>
+        <div className="choice-options">
+          <label className="choice-option">
+            <input
+              type="radio"
+              name="hasSpouse"
+              value="no"
+              checked={!hasSpouse}
+              onChange={() => setHasSpouse(false)}
+              disabled={disabled}
+            />
+            Nao
+          </label>
+          <label className="choice-option">
+            <input
+              type="radio"
+              name="hasSpouse"
+              value="yes"
+              checked={hasSpouse}
+              onChange={() => setHasSpouse(true)}
+              disabled={disabled}
+            />
+            Sim
+          </label>
+        </div>
       </fieldset>
 
       {hasSpouse ? (
-        <div className="child-card">
+        <div className="dynamic-card">
           <label>
             Nome do conjuge
             <input

@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server';
-import { adminUserCreateSchema, createAdminUser } from '@/lib/admin-users';
+import {
+  adminUserCreateSchema,
+  createAdminAuditLog,
+  createAdminUser,
+} from '@/lib/admin-users';
 import { getAdminSessionFromRequest } from '@/lib/auth';
 import { buildRequestUrl } from '@/lib/request-url';
 
 export async function POST(request: Request) {
-  if (!getAdminSessionFromRequest(request)) {
+  const session = getAdminSessionFromRequest(request);
+
+  if (!session) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 
@@ -23,7 +29,18 @@ export async function POST(request: Request) {
   }
 
   try {
-    await createAdminUser(parsed.data);
+    const adminUser = await createAdminUser(parsed.data);
+    await createAdminAuditLog({
+      actorAdminUserId: session.adminUserId,
+      actorEmail: session.email,
+      action: 'admin_user.created',
+      entityType: 'admin_user',
+      entityId: adminUser.id,
+      metadata: {
+        email: adminUser.email,
+        fullName: adminUser.fullName,
+      },
+    });
     redirectUrl.searchParams.set('created', '1');
     return NextResponse.redirect(redirectUrl, { status: 303 });
   } catch (error) {

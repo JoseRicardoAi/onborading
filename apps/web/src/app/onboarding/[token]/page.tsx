@@ -2,6 +2,7 @@ import { ChildrenFields } from '@/components/children-fields';
 import { EducationFields } from '@/components/education-fields';
 import { EmergencyContactFields } from '@/components/emergency-contact-fields';
 import { HealthFields } from '@/components/health-fields';
+import { OnboardingDraftPersistence } from '@/components/onboarding-draft-persistence';
 import { SpouseFields } from '@/components/spouse-fields';
 import {
   getOnboardingCompletionIssues,
@@ -32,6 +33,10 @@ const errorMessages: Record<string, string> = {
   finalize: 'Confirme a revisao final dos dados antes de concluir o onboarding.',
   incomplete:
     'Salve os dados obrigatorios e o contato de emergencia antes de finalizar.',
+  save:
+    'Nao foi possivel salvar agora. Seus dados ficaram preservados neste aparelho; tente novamente em instantes.',
+  'finalize-save':
+    'Os dados foram salvos, mas nao foi possivel finalizar agora. Tente enviar novamente ou avise o RH.',
 };
 
 export default async function OnboardingTokenPage({
@@ -196,9 +201,11 @@ export default async function OnboardingTokenPage({
 
           <form
             className="uniform-form"
+            data-draft-key={token}
             action={`/api/public/onboarding/${token}/submit`}
             method="post"
           >
+            <OnboardingDraftPersistence draftKey={token} />
             <div className="form-group">
               <div className="section-header compact-header">
                 <div>
@@ -415,56 +422,57 @@ export default async function OnboardingTokenPage({
             </label>
             </div>
 
-            <button type="submit">Salvar dados e continuar depois</button>
-          </form>
-
-          <div className="form-group finalize-group">
-            <div className="section-header compact-header">
-              <div>
-                <p className="eyebrow">Etapa final</p>
-                <h3>Revisar e enviar onboarding</h3>
-              </div>
-              <p className="section-copy">
-                Quando todos os dados obrigatorios estiverem preenchidos, finalize
-                o formulario para encerrar este link.
-              </p>
+            <div className="form-actions">
+              <button type="submit" name="intent" value="save">
+                Salvar dados e continuar depois
+              </button>
             </div>
 
-            <ul className="review-list" aria-label="Checklist de revisao">
-              {reviewItems.map((item) => (
-                <li key={item.label} className="review-item">
-                  <strong>{item.complete ? 'Completo' : 'Pendente'}</strong>
-                  <span>{item.label}</span>
-                  <p>{item.description}</p>
-                </li>
-              ))}
-            </ul>
+            <div className="form-group finalize-group">
+              <div className="section-header compact-header">
+                <div>
+                  <p className="eyebrow">Etapa final</p>
+                  <h3>Revisar e enviar onboarding</h3>
+                </div>
+                <p className="section-copy">
+                  Quando todos os dados obrigatorios estiverem preenchidos, finalize
+                  o formulario para encerrar este link.
+                </p>
+              </div>
 
-            {completionIssues.length > 0 ? (
-              <p className="form-message form-message-error" role="alert">
-                Pendencias para concluir: {completionIssues.join(', ')}.
-              </p>
-            ) : (
-              <p className="form-message form-message-success">
-                Tudo certo: voce ja pode enviar o onboarding para o RH.
-              </p>
-            )}
+              <ul className="review-list" aria-label="Checklist de revisao">
+                {reviewItems.map((item) => (
+                  <li key={item.label} className="review-item">
+                    <strong>{item.complete ? 'Completo' : 'Pendente'}</strong>
+                    <span>{item.label}</span>
+                    <p>{item.description}</p>
+                  </li>
+                ))}
+              </ul>
 
-            <form
-              className="finalize-form"
-              action={`/api/public/onboarding/${token}/finalize`}
-              method="post"
-            >
+              {completionIssues.length > 0 ? (
+                <p className="form-message form-message-error" role="alert">
+                  Se voce acabou de preencher os dados, pode clicar em enviar: o
+                  sistema vai salvar tudo antes de concluir. Pendencias ja salvas:
+                  {' '}
+                  {completionIssues.join(', ')}.
+                </p>
+              ) : (
+                <p className="form-message form-message-success">
+                  Tudo certo: voce ja pode enviar o onboarding para o RH.
+                </p>
+              )}
+
               <label className="consent-option">
                 <input type="checkbox" name="finalConfirmation" value="accepted" />
                 Revisei meus dados e autorizo o envio final deste onboarding.
               </label>
 
-              <button type="submit" disabled={completionIssues.length > 0}>
+              <button type="submit" name="intent" value="finalize">
                 Enviar onboarding
               </button>
-            </form>
-          </div>
+            </div>
+          </form>
         </article>
 
         <aside className="admin-section onboarding-section">

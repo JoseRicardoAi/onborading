@@ -62,46 +62,51 @@ export function ChildrenFields({
   }
 
   return (
-    <div className="form-group">
+    <div className="form-group dynamic-section">
       <div className="section-header compact-header">
         <div>
           <p className="eyebrow">Filhos</p>
-          <h3>Blocos dinamicos</h3>
+          <h3>Dependentes e datas importantes</h3>
         </div>
+        <p className="section-copy">
+          Informe somente se houver filhos. Cada bloco representa uma crianca.
+        </p>
       </div>
 
       <fieldset className="choice-group">
         <legend>Voce tem filhos?</legend>
-        <label className="choice-option">
-          <input
-            type="radio"
-            name="hasChildren"
-            value="no"
-            checked={!hasChildren}
-            onChange={() => setHasChildren(false)}
-            disabled={disabled}
-          />
-          Nao
-        </label>
-        <label className="choice-option">
-          <input
-            type="radio"
-            name="hasChildren"
-            value="yes"
-            checked={hasChildren}
-            onChange={() => setHasChildren(true)}
-            disabled={disabled}
-          />
-          Sim
-        </label>
+        <div className="choice-options">
+          <label className="choice-option">
+            <input
+              type="radio"
+              name="hasChildren"
+              value="no"
+              checked={!hasChildren}
+              onChange={() => setHasChildren(false)}
+              disabled={disabled}
+            />
+            Nao
+          </label>
+          <label className="choice-option">
+            <input
+              type="radio"
+              name="hasChildren"
+              value="yes"
+              checked={hasChildren}
+              onChange={() => setHasChildren(true)}
+              disabled={disabled}
+            />
+            Sim
+          </label>
+        </div>
       </fieldset>
 
       {hasChildren ? (
         <div className="children-stack">
           {children.map((child, index) => (
-            <div className="child-card" key={child.id}>
+            <div className="dynamic-card" key={child.id}>
               <div className="child-card-header">
-                <strong>Filho {index + 1}</strong>
+                <strong className="dynamic-card-title">Filho {index + 1}</strong>
                 <button
                   className="button button-secondary button-small"
                   type="button"
@@ -163,7 +168,7 @@ export function ChildrenFields({
           ))}
 
           <button
-            className="button button-secondary"
+            className="button button-secondary dynamic-action"
             type="button"
             onClick={addChild}
             disabled={disabled}

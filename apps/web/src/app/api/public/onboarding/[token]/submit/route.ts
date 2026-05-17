@@ -8,15 +8,17 @@ import {
   upsertEmployeeSpouse,
 } from '@/lib/employees';
 import {
+  getOnboardingCompletionIssues,
   onboardingChildrenSchema,
   onboardingEducationSchema,
   onboardingEmergencyContactSchema,
+  onboardingFinalizeSchema,
   onboardingHealthSchema,
   onboardingProfileSchema,
   onboardingSpouseSchema,
 } from '@/lib/onboarding-form';
 import { buildRequestUrl } from '@/lib/request-url';
-import { validateAccessToken } from '@/lib/tokens';
+import { finalizeOnboardingToken, validateAccessToken } from '@/lib/tokens';
 
 type RouteContext = {
   params: Promise<{
@@ -87,6 +89,10 @@ export async function POST(request: Request, context: RouteContext) {
     courseSchedule: formData.get('courseSchedule'),
     expectedEndDate: formData.get('expectedEndDate'),
   });
+  const shouldFinalize = formData.get('intent') === 'finalize';
+  const parsedConfirmation = onboardingFinalizeSchema.safeParse({
+    finalConfirmation: formData.get('finalConfirmation'),
+  });
 
   const redirectUrl = buildRequestUrl(request, `/onboarding/${token}`);
 
@@ -102,15 +108,60 @@ export async function POST(request: Request, context: RouteContext) {
     return NextResponse.redirect(redirectUrl, { status: 303 });
   }
 
-  await saveEmployeeOnboardingProfile(tokenState.employee.id, parsed.data);
-  await replaceEmployeeChildren(tokenState.employee.id, parsedChildren.data.children);
-  await upsertEmployeeSpouse(tokenState.employee.id, parsedSpouse.data);
-  await upsertEmployeeHealthProfile(tokenState.employee.id, parsedHealth.data);
-  await upsertEmployeeEmergencyContact(
-    tokenState.employee.id,
-    parsedEmergencyContact.data,
-  );
-  await upsertEmployeeEducationProfile(tokenState.employee.id, parsedEducation.data);
+  if (shouldFinalize && !parsedConfirmation.success) {
+    redirectUrl.searchParams.set('error', 'finalize');
+    return NextResponse.redirect(redirectUrl, { status: 303 });
+  }
+
+  try {
+    await saveEmployeeOnboardingProfile(tokenState.employee.id, parsed.data);
+    await replaceEmployeeChildren(tokenState.employee.id, parsedChildren.data.children);
+    await upsertEmployeeSpouse(tokenState.employee.id, parsedSpouse.data);
+    await upsertEmployeeHealthProfile(tokenState.employee.id, parsedHealth.data);
+    await upsertEmployeeEmergencyContact(
+      tokenState.employee.id,
+      parsedEmergencyContact.data,
+    );
+    await upsertEmployeeEducationProfile(tokenState.employee.id, parsedEducation.data);
+  } catch {
+    redirectUrl.searchParams.set('error', 'save');
+    return NextResponse.redirect(redirectUrl, { status: 303 });
+  }
+
+  if (shouldFinalize) {
+    const completionIssues = getOnboardingCompletionIssues({
+      fullName: parsed.data.fullName,
+      birthDate: new Date(parsed.data.birthDate),
+      phone: parsed.data.phone,
+      email: parsed.data.email,
+      residentialAddress: parsed.data.residentialAddress,
+      uniformShirtSize: parsed.data.shirtSize,
+      uniformPantsSize: parsed.data.pantsSize,
+      uniformShoeSize: parsed.data.shoeSize,
+      emergencyContact: {
+        name: parsedEmergencyContact.data.emergencyContactName,
+        phone: parsedEmergencyContact.data.emergencyContactPhone,
+        address: parsedEmergencyContact.data.emergencyContactAddress,
+      },
+    });
+
+    if (completionIssues.length > 0) {
+      redirectUrl.searchParams.set('error', 'incomplete');
+      return NextResponse.redirect(redirectUrl, { status: 303 });
+    }
+
+    try {
+      await finalizeOnboardingToken(tokenState.tokenRecordId, tokenState.employee.id);
+    } catch {
+      redirectUrl.searchParams.set('error', 'finalize-save');
+      return NextResponse.redirect(redirectUrl, { status: 303 });
+    }
+
+    const successUrl = buildRequestUrl(request, `/onboarding/${token}/concluido`);
+    successUrl.searchParams.set('fullName', parsed.data.fullName);
+
+    return NextResponse.redirect(successUrl, { status: 303 });
+  }
 
   redirectUrl.searchParams.set('submitted', '1');
   redirectUrl.searchParams.set('fullName', parsed.data.fullName);
